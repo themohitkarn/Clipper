@@ -6,14 +6,18 @@ from typing import List, Dict, Any, Optional
 
 logger = logging.getLogger(__name__)
 
-# Emotional, curiosity, and high-engagement power words
+# Emotional, curiosity, and high-engagement power words (English & Hinglish)
 VIRAL_HOOK_TRIGGERS = [
     r"\bwhy\b", r"\bhow to\b", r"\bsecret\b", r"\bmistake\b", r"\bnever\b",
     r"\balways\b", r"\bdon't\b", r"\bstop\b", r"\bthe truth\b", r"\bwarning\b",
     r"\bshocking\b", r"\binsane\b", r"\bcrazy\b", r"\bunbelievable\b", r"\bworst\b",
     r"\bbest\b", r"\bhate\b", r"\blove\b", r"\bmoney\b", r"\brich\b", r"\bmillion\b",
     r"\bbillion\b", r"\bfail\b", r"\bsuccess\b", r"\brule\b", r"\blie\b", r"\bexposed\b",
-    r"\breason\b", r"\bproblem\b", r"\bfix\b", r"\bproven\b", r"\bhack\b"
+    r"\breason\b", r"\bproblem\b", r"\bfix\b", r"\bproven\b", r"\bhack\b",
+    # Hinglish viral triggers
+    r"\bpaisa\b", r"\bpaise\b", r"\brupaye\b", r"\bkya\b", r"\bkyun\b", r"\bkaise\b",
+    r"\braaz\b", r"\bgalti\b", r"\bmat karo\b", r"\bkabhi nahi\b", r"\bsach\b",
+    r"\bsuno\b", r"\bdekho\b", r"\bviral\b", r"\bviews\b", r"\btoofan\b"
 ]
 
 class ViralDetector:

@@ -3,28 +3,32 @@ import re
 from pathlib import Path
 from typing import List, Dict, Any
 
-# Keyword to emoji mapping for viral captions
+from ..utils.hinglish import to_hinglish
+
+# Keyword to emoji mapping for viral captions (English & Hinglish)
 EMOJI_MAP = {
-    r"\bmoney\b": "💰",
+    r"\bmoney\b|\bpaisa\b|\bpaise\b|\brupaye\b": "💰",
     r"\bcash\b": "💵",
-    r"\brich\b": "🤑",
-    r"\bsecret\b": "🤫",
-    r"\bstop\b": "🛑",
-    r"\bfire\b": "🔥",
-    r"\bcrazy\b": "🤯",
-    r"\binsane\b": "🤯",
-    r"\bwarning\b": "⚠️",
-    r"\bdanger\b": "⚠️",
-    r"\bluck\b": "🍀",
-    r"\btime\b": "⏳",
-    r"\bgrowth\b": "📈",
-    r"\bwin\b": "🏆",
-    r"\bcar\b": "🚗",
-    r"\bworld\b": "🌍",
+    r"\brich\b|\bcrorepati\b|\bameer\b": "🤑",
+    r"\bsecret\b|\braaz\b": "🤫",
+    r"\bstop\b|\bruko\b": "🛑",
+    r"\bfire\b|\baag\b": "🔥",
+    r"\bcrazy\b|\binsane\b|\bhil gaya\b": "🤯",
+    r"\bwarning\b|\bdanger\b|\bkhatra\b": "⚠️",
+    r"\bluck\b|\bkismat\b": "🍀",
+    r"\btime\b|\bwakt\b|\bsamay\b": "⏳",
+    r"\bgrowth\b|\bviews\b": "📈",
+    r"\bwin\b|\bjeet\b": "🏆",
+    r"\bcar\b|\bgaadi\b": "🚗",
+    r"\bworld\b|\bduniya\b": "🌍",
     r"\bphone\b": "📱",
-    r"\blie\b": "🤥",
-    r"\bheart\b": "❤️",
-    r"\bstar\b": "⭐"
+    r"\blie\b|\bjhooth\b": "🤥",
+    r"\bheart\b|\bdil\b": "❤️",
+    r"\bstar\b": "⭐",
+    r"\bgame\b|\bgaming\b": "🎮",
+    r"\bpolice\b": "🚓",
+    r"\btoofan\b|\baandhi\b": "🌪️",
+    r"\bbhai\b|\byaar\b": "🤝"
 }
 
 class SubtitleGenerator:
@@ -77,7 +81,8 @@ class SubtitleGenerator:
         for sub in subtitles:
             start = max(0.0, sub["start"] - clip_start_offset)
             end = max(start + 0.5, sub["end"] - clip_start_offset)
-            text = self.add_emojis(sub["text"].strip())
+            clean_txt = to_hinglish(sub["text"].strip())
+            text = self.add_emojis(clean_txt)
 
             lines.append(f"{cue_idx}")
             lines.append(f"{self.format_srt_timestamp(start)} --> {self.format_srt_timestamp(end)}")
@@ -101,7 +106,8 @@ class SubtitleGenerator:
         for sub in subtitles:
             start = max(0.0, sub["start"] - clip_start_offset)
             end = max(start + 0.5, sub["end"] - clip_start_offset)
-            text = self.add_emojis(sub["text"].strip())
+            clean_txt = to_hinglish(sub["text"].strip())
+            text = self.add_emojis(clean_txt)
 
             lines.append(f"{cue_idx}")
             lines.append(f"{self.format_vtt_timestamp(start)} --> {self.format_vtt_timestamp(end)}")
@@ -203,7 +209,7 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
         for sub in subtitles:
             start = max(0.0, sub["start"] - clip_start_offset)
             end = max(start + 0.5, sub["end"] - clip_start_offset)
-            raw_text = sub["text"].strip().upper()
+            raw_text = to_hinglish(sub["text"].strip()).upper()
             text = self.add_emojis(raw_text)
 
             start_str = self.format_ass_timestamp(start)

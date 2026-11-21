@@ -3,6 +3,8 @@ import re
 from typing import List, Dict, Any, Optional
 from pathlib import Path
 
+from ..utils.hinglish import to_hinglish
+
 logger = logging.getLogger(__name__)
 
 class Transcriber:
@@ -52,11 +54,13 @@ class Transcriber:
                     # Clean up music notes / sound effects like [Music], (Laughter), ♪
                     clean_text = re.sub(r"\[.*?\]|\(.*?\)|[♪♫♬🎵]", "", text).strip()
                     if clean_text:
+                        # Convert Devanagari Hindi into natural Hinglish; leaves English 100% untouched
+                        hinglish_text = to_hinglish(clean_text)
                         formatted.append({
                             "start": round(start, 2),
                             "duration": round(duration, 2),
                             "end": round(start + duration, 2),
-                            "text": clean_text
+                            "text": hinglish_text
                         })
             return formatted if formatted else None
         except Exception as e:
@@ -74,12 +78,14 @@ class Transcriber:
             segments, _ = model.transcribe(str(audio_path), word_timestamps=True)
             formatted = []
             for segment in segments:
-                formatted.append({
-                    "start": round(segment.start, 2),
-                    "end": round(segment.end, 2),
-                    "duration": round(segment.end - segment.start, 2),
-                    "text": segment.text.strip()
-                })
+                txt = segment.text.strip()
+                if txt:
+                    formatted.append({
+                        "start": round(segment.start, 2),
+                        "end": round(segment.end, 2),
+                        "duration": round(segment.end - segment.start, 2),
+                        "text": to_hinglish(txt)
+                    })
             return formatted
         except ImportError:
             logger.info("faster-whisper not installed; using audio timeline estimation fallback.")
