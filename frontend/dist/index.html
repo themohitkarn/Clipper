@@ -50,29 +50,107 @@
     }
   </style>
 
-  <!-- React 18 & Lucide Icons via Browser ESM -->
-  <script type="importmap">
-  {
-    "imports": {
-      "react": "https://esm.sh/react@18.3.1",
-      "react-dom/client": "https://esm.sh/react-dom@18.3.1/client",
-      "lucide-react": "https://esm.sh/lucide-react@0.475.0"
-    }
-  }
-  </script>
+  <!-- Local React 18 Production UMD Bundles -->
+  <script src="/vendor/react.min.js"></script>
+  <script src="/vendor/react-dom.min.js"></script>
 </head>
 <body class="min-h-screen flex flex-col selection:bg-purple-600 selection:text-white">
   <div id="root"></div>
 
-  <script type="module">
-    import React, { useState, useEffect } from 'react';
-    import ReactDOM from 'react-dom/client';
-    import {
-      Zap, Github, Sparkles, Video, CheckCircle2, ShieldCheck, Youtube, Upload,
-      Sliders, ChevronDown, ChevronUp, Clock, LayoutTemplate, Type, Key, Flame,
-      Download, Subtitles, Share2, Edit3, Check, Loader2, Scissors, MessageSquareQuote,
-      DownloadCloud, X
-    } from 'lucide-react';
+  <script>
+    const { useState, useEffect, createElement: e, StrictMode } = React;
+
+    // Zero-dependency crisp SVG Icons
+    const createSvgIcon = (paths) => ({ className = "w-4 h-4", ...props }) =>
+      e('svg', {
+        xmlns: "http://www.w3.org/2000/svg",
+        viewBox: "0 0 24 24",
+        fill: "none",
+        stroke: "currentColor",
+        strokeWidth: "2",
+        strokeLinecap: "round",
+        strokeLinejoin: "round",
+        className,
+        ...props
+      }, ...paths);
+
+    const Zap = createSvgIcon([e('polygon', { points: '13 2 3 14 12 14 11 22 21 10 12 10 13 2' })]);
+    const Github = createSvgIcon([
+      e('path', { d: 'M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4' }),
+      e('path', { d: 'M9 18c-4.51 2-5-2-7-2' })
+    ]);
+    const Sparkles = createSvgIcon([e('path', { d: 'm12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z' })]);
+    const Video = createSvgIcon([e('path', { d: 'm22 8-6 4 6 4V8Z' }), e('rect', { width: '14', height: '12', x: '2', y: '6', rx: '2' })]);
+    const CheckCircle2 = createSvgIcon([e('circle', { cx: '12', cy: '12', r: '10' }), e('path', { d: 'm9 12 2 2 4-4' })]);
+    const ShieldCheck = createSvgIcon([e('path', { d: 'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10' }), e('path', { d: 'm9 12 2 2 4-4' })]);
+    const Youtube = createSvgIcon([
+      e('path', { d: 'M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17' }),
+      e('polygon', { points: '10 15 15 12 10 9 10 15', fill: 'currentColor' })
+    ]);
+    const Upload = createSvgIcon([
+      e('path', { d: 'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4' }),
+      e('polyline', { points: '17 8 12 3 7 8' }),
+      e('line', { x1: '12', x2: '12', y1: '3', y2: '15' })
+    ]);
+    const Sliders = createSvgIcon([
+      e('line', { x1: '4', x2: '4', y1: '21', y2: '14' }),
+      e('line', { x1: '4', x2: '4', y1: '10', y2: '3' }),
+      e('line', { x1: '12', x2: '12', y1: '21', y2: '12' }),
+      e('line', { x1: '12', x2: '12', y1: '8', y2: '3' }),
+      e('line', { x1: '20', x2: '20', y1: '21', y2: '16' }),
+      e('line', { x1: '20', x2: '20', y1: '12', y2: '3' }),
+      e('line', { x1: '1', x2: '7', y1: '14', y2: '14' }),
+      e('line', { x1: '9', x2: '15', y1: '8', y2: '8' }),
+      e('line', { x1: '17', x2: '23', y1: '16', y2: '16' })
+    ]);
+    const ChevronDown = createSvgIcon([e('path', { d: 'm6 9 6 6 6-6' })]);
+    const ChevronUp = createSvgIcon([e('path', { d: 'm18 15-6-6-6 6' })]);
+    const Clock = createSvgIcon([e('circle', { cx: '12', cy: '12', r: '10' }), e('polyline', { points: '12 6 12 12 16 14' })]);
+    const LayoutTemplate = createSvgIcon([e('rect', { width: '18', height: '18', x: '3', y: '3', rx: '2' }), e('path', { d: 'M3 9h18' }), e('path', { d: 'M9 21V9' })]);
+    const Type = createSvgIcon([e('polyline', { points: '4 7 4 4 20 4 20 7' }), e('line', { x1: '9', x2: '15', y1: '20', y2: '20' }), e('line', { x1: '12', x2: '12', y1: '4', y2: '20' })]);
+    const Key = createSvgIcon([e('circle', { cx: '7.5', cy: '15.5', r: '5.5' }), e('path', { d: 'm21 2-9.6 9.6' }), e('path', { d: 'm15.5 7.5 3 3L22 7l-3-3' })]);
+    const Flame = createSvgIcon([e('path', { d: 'M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z' })]);
+    const Download = createSvgIcon([
+      e('path', { d: 'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4' }),
+      e('polyline', { points: '7 10 12 15 17 10' }),
+      e('line', { x1: '12', x2: '12', y1: '15', y2: '3' })
+    ]);
+    const Subtitles = createSvgIcon([e('rect', { width: '20', height: '16', x: '2', y: '4', rx: '2' }), e('path', { d: 'M7 15h4M15 15h2M7 11h2M13 11h4' })]);
+    const Share2 = createSvgIcon([
+      e('circle', { cx: '18', cy: '5', r: '3' }),
+      e('circle', { cx: '6', cy: '12', r: '3' }),
+      e('circle', { cx: '18', cy: '19', r: '3' }),
+      e('line', { x1: '8.59', x2: '15.42', y1: '13.51', y2: '17.49' }),
+      e('line', { x1: '15.41', x2: '8.59', y1: '6.51', y2: '10.49' })
+    ]);
+    const Edit3 = createSvgIcon([e('path', { d: 'M12 20h9' }), e('path', { d: 'M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z' })]);
+    const Check = createSvgIcon([e('polyline', { points: '20 6 9 17 4 12' })]);
+    const Loader2 = ({ className = "w-4 h-4", ...props }) =>
+      e('svg', {
+        xmlns: "http://www.w3.org/2000/svg",
+        viewBox: "0 0 24 24",
+        fill: "none",
+        stroke: "currentColor",
+        strokeWidth: "2",
+        strokeLinecap: "round",
+        strokeLinejoin: "round",
+        className: `${className} animate-spin`,
+        ...props
+      }, e('path', { d: 'M21 12a9 9 0 1 1-6.219-8.56' }));
+    const Scissors = createSvgIcon([
+      e('circle', { cx: '6', cy: '6', r: '3' }),
+      e('circle', { cx: '6', cy: '18', r: '3' }),
+      e('line', { x1: '20', x2: '8.12', y1: '4', y2: '15.88' }),
+      e('line', { x1: '14.47', x2: '20', y1: '14.48', y2: '20' }),
+      e('line', { x1: '8.12', x2: '12', y1: '8.12', y2: '12' })
+    ]);
+    const MessageSquareQuote = createSvgIcon([e('path', { d: 'M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z' })]);
+    const DownloadCloud = createSvgIcon([
+      e('path', { d: 'M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242' }),
+      e('path', { d: 'm8 17 4 4 4-4' }),
+      e('path', { d: 'M12 12v9' })
+    ]);
+    const X = createSvgIcon([e('path', { d: 'M18 6 6 18' }), e('path', { d: 'm6 6 12 12' })]);
 
     function App() {
       const [systemInfo, setSystemInfo] = useState(null);
@@ -124,16 +202,16 @@
               setIsProcessing(false);
               clearInterval(interval);
             }
-          } catch (e) {
-            console.error("Polling error", e);
+          } catch (err) {
+            console.error("Polling error", err);
           }
         }, 1500);
 
         return () => clearInterval(interval);
       }, [activeJobId, isProcessing]);
 
-      const handleSubmit = async (e) => {
-        e.preventDefault();
+      const handleSubmit = async (ev) => {
+        ev.preventDefault();
         setIsProcessing(true);
         setJobData({ status: 'queued', progress: 5, current_step: 'Starting clipping pipeline...' });
 
@@ -161,11 +239,16 @@
               setIsProcessing(false);
             }
           } catch (err) {
-            alert("Connection error to Clipper backend.");
+            alert("Failed to connect to backend server.");
             setIsProcessing(false);
           }
         } else {
-          if (!file) return;
+          // File Upload
+          if (!file) {
+            alert("Please select a video file first.");
+            setIsProcessing(false);
+            return;
+          }
           const formData = new FormData();
           formData.append('file', file);
           formData.append('aspect_ratio', aspectRatio);
@@ -173,10 +256,13 @@
           formData.append('min_duration', minDuration);
           formData.append('max_duration', maxDuration);
           formData.append('max_clips', maxClips);
-          if (geminiApiKey.trim()) formData.append('gemini_api_key', geminiApiKey.trim());
+          if (geminiApiKey) formData.append('gemini_api_key', geminiApiKey);
 
           try {
-            const res = await fetch('/api/upload', { method: 'POST', body: formData });
+            const res = await fetch('/api/upload', {
+              method: 'POST',
+              body: formData
+            });
             const data = await res.json();
             if (data.job_id) {
               setActiveJobId(data.job_id);
@@ -195,347 +281,365 @@
         .filter(c => c.viral_score >= filterScore)
         .sort((a, b) => sortBy === 'score' ? b.viral_score - a.viral_score : a.start_time - b.start_time);
 
-      return React.createElement('div', { className: 'min-h-screen flex flex-col' },
+      return e('div', { className: 'min-h-screen flex flex-col' },
         // Navbar
-        React.createElement('header', { className: 'border-b border-slate-800/80 bg-[#0c0e17]/80 backdrop-blur-md sticky top-0 z-50' },
-          React.createElement('div', { className: 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between' },
-            React.createElement('div', { className: 'flex items-center gap-3' },
-              React.createElement('div', { className: 'w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-600 via-indigo-600 to-pink-500 flex items-center justify-center shadow-lg shadow-purple-500/25' },
-                React.createElement(Zap, { className: 'w-6 h-6 text-white fill-white' })
+        e('header', { className: 'border-b border-slate-800/80 bg-[#0c0e17]/80 backdrop-blur-md sticky top-0 z-50' },
+          e('div', { className: 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between' },
+            e('div', { className: 'flex items-center gap-3' },
+              e('div', { className: 'w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-600 via-indigo-600 to-pink-500 flex items-center justify-center shadow-lg shadow-purple-500/25' },
+                e(Zap, { className: 'w-6 h-6 text-white' })
               ),
-              React.createElement('div', null,
-                React.createElement('div', { className: 'flex items-center gap-2' },
-                  React.createElement('span', { className: 'font-black text-xl tracking-tight text-white' }, 'Clipper AI'),
-                  React.createElement('span', { className: 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' }, '100% FREE')
+              e('div', null,
+                e('div', { className: 'flex items-center gap-2' },
+                  e('span', { className: 'font-black text-xl tracking-tight text-white' }, 'Clipper AI'),
+                  e('span', { className: 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' }, '100% FREE')
                 ),
-                React.createElement('p', { className: 'text-[11px] text-slate-400 hidden sm:block' }, 'Turn 10-Min to 24-Hr Long Videos into Viral Shorts')
+                e('p', { className: 'text-[11px] text-slate-400 hidden sm:block' }, 'Turn 10-Min to 24-Hr Long Videos into Viral Shorts')
               )
             ),
-            React.createElement('div', { className: 'flex items-center gap-3' },
-              React.createElement('a', {
+            e('div', { className: 'flex items-center gap-3' },
+              e('a', {
                 href: 'https://github.com/themohitkarn/Clipper',
                 target: '_blank',
                 rel: 'noopener noreferrer',
                 className: 'flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 border border-slate-700 transition-all shadow-sm'
               },
-                React.createElement(Github, { className: 'w-4 h-4' }),
-                React.createElement('span', null, 'themohitkarn/Clipper')
+                e(Github, { className: 'w-4 h-4' }),
+                e('span', null, 'themohitkarn/Clipper')
               )
             )
           )
         ),
 
         // Hero & Input Section
-        React.createElement('main', { className: 'flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 py-10' },
-          React.createElement('div', { className: 'text-center mb-8' },
-            React.createElement('div', { className: 'inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-xs font-semibold mb-3' },
-              React.createElement(Sparkles, { className: 'w-3.5 h-3.5' }),
-              React.createElement('span', null, 'Free Alternative to Opus Clip, Munch & Klap')
+        e('main', { className: 'flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 py-10' },
+          e('div', { className: 'text-center mb-8' },
+            e('div', { className: 'inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-xs font-semibold mb-3' },
+              e(Sparkles, { className: 'w-3.5 h-3.5' }),
+              e('span', null, 'Free Alternative to Opus Clip, Munch & Klap')
             ),
-            React.createElement('h1', { className: 'text-3xl sm:text-5xl font-black tracking-tight text-white mb-3' },
+            e('h1', { className: 'text-3xl sm:text-5xl font-black tracking-tight text-white mb-3' },
               'Turn Long Videos into ',
-              React.createElement('span', { className: 'bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400 bg-clip-text text-transparent' }, 'Viral Shorts'),
+              e('span', { className: 'bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400 bg-clip-text text-transparent' }, 'Viral Shorts'),
               ' in Seconds'
             ),
-            React.createElement('p', { className: 'text-slate-400 text-sm sm:text-base max-w-2xl mx-auto' },
+            e('p', { className: 'text-slate-400 text-sm sm:text-base max-w-2xl mx-auto' },
               'Extract the best clips from any video (10 minutes or 24-hour long livestreams). Smart hook detection, 9:16 vertical reframe & Alex Hormozi captions. 100% Free.'
             )
           ),
 
           // Main Input Box
-          React.createElement('div', { className: 'max-w-4xl mx-auto bg-[#10121c] border border-slate-800/90 rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden mb-10' },
+          e('div', { className: 'max-w-4xl mx-auto bg-[#10121c] border border-slate-800/90 rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden mb-10' },
             // Tab Selector
-            React.createElement('div', { className: 'flex p-1.5 bg-slate-900 border border-slate-800 rounded-2xl max-w-md mx-auto mb-6' },
-              React.createElement('button', {
+            e('div', { className: 'flex p-1.5 bg-slate-900 border border-slate-800 rounded-2xl max-w-md mx-auto mb-6' },
+              e('button', {
                 type: 'button',
                 onClick: () => setActiveTab('youtube'),
-                className: `flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-all ${activeTab === 'youtube' ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md' : 'text-slate-400 hover:text-slate-200'}`
+                className: `flex-1 py-2.5 px-4 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${
+                  activeTab === 'youtube'
+                    ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30'
+                    : 'text-slate-400 hover:text-white'
+                }`
               },
-                React.createElement(Youtube, { className: 'w-4 h-4 text-red-500' }),
-                React.createElement('span', null, 'YouTube URL')
+                e(Youtube, { className: 'w-4 h-4 text-red-500' }),
+                e('span', null, 'YouTube URL')
               ),
-              React.createElement('button', {
+              e('button', {
                 type: 'button',
                 onClick: () => setActiveTab('upload'),
-                className: `flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-all ${activeTab === 'upload' ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md' : 'text-slate-400 hover:text-slate-200'}`
+                className: `flex-1 py-2.5 px-4 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${
+                  activeTab === 'upload'
+                    ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30'
+                    : 'text-slate-400 hover:text-white'
+                }`
               },
-                React.createElement(Upload, { className: 'w-4 h-4 text-emerald-400' }),
-                React.createElement('span', null, 'Upload Video')
+                e(Upload, { className: 'w-4 h-4' }),
+                e('span', null, 'Upload Local Video')
               )
             ),
 
             // Form
-            React.createElement('form', { onSubmit: handleSubmit, className: 'space-y-6' },
+            e('form', { onSubmit: handleSubmit, className: 'space-y-6' },
               activeTab === 'youtube'
-                ? React.createElement('div', null,
-                    React.createElement('input', {
-                      type: 'text',
-                      placeholder: 'Paste YouTube video or livestream URL (e.g. https://www.youtube.com/watch?v=...)',
-                      value: url,
-                      onChange: (e) => setUrl(e.target.value),
-                      disabled: isProcessing,
-                      className: 'w-full bg-[#161824] border border-slate-700/80 rounded-2xl px-5 py-4 text-slate-100 placeholder-slate-500 text-sm focus:outline-none focus:border-purple-500 transition-colors shadow-inner'
-                    }),
-                    React.createElement('div', { className: 'mt-3 flex flex-wrap items-center gap-2 text-xs text-slate-400' },
-                      React.createElement('span', { className: 'text-slate-500' }, 'Try sample:'),
-                      sampleVideos.map((s, i) => React.createElement('button', {
-                        key: i,
-                        type: 'button',
-                        onClick: () => setUrl(s.url),
-                        className: 'px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-purple-300 hover:text-white transition-colors border border-slate-700/60'
-                      }, s.label))
+                ? e('div', { className: 'space-y-3' },
+                    e('div', { className: 'relative' },
+                      e('div', { className: 'absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none' },
+                        e(Youtube, { className: 'w-5 h-5 text-red-500' })
+                      ),
+                      e('input', {
+                        type: 'url',
+                        value: url,
+                        onChange: (ev) => setUrl(ev.target.value),
+                        placeholder: 'Paste YouTube video link here... (e.g. https://www.youtube.com/watch?v=...)',
+                        required: true,
+                        className: 'w-full pl-12 pr-4 py-4 rounded-2xl bg-slate-950/80 border border-slate-700/80 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm'
+                      })
+                    ),
+                    // Sample Videos
+                    e('div', { className: 'flex flex-wrap items-center gap-2 pt-1' },
+                      e('span', { className: 'text-[11px] font-semibold text-slate-500' }, 'Try sample:'),
+                      sampleVideos.map((s, idx) =>
+                        e('button', {
+                          key: idx,
+                          type: 'button',
+                          onClick: () => setUrl(s.url),
+                          className: 'text-[11px] px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-purple-400 border border-slate-800 hover:border-purple-500/40 transition-all'
+                        }, s.label)
+                      )
                     )
                   )
-                : React.createElement('div', { className: 'border-2 border-dashed border-slate-700 hover:border-purple-500/60 rounded-2xl p-8 text-center bg-[#141622]/50 transition-colors' },
-                    React.createElement('input', {
-                      type: 'file',
-                      id: 'file-upload',
-                      accept: 'video/*',
-                      onChange: (e) => setFile(e.target.files[0]),
-                      className: 'hidden'
-                    }),
-                    React.createElement('label', { htmlFor: 'file-upload', className: 'cursor-pointer flex flex-col items-center' },
-                      React.createElement('div', { className: 'w-12 h-12 rounded-2xl bg-purple-500/10 flex items-center justify-center text-purple-400 mb-3' },
-                        React.createElement(Upload, { className: 'w-6 h-6' })
-                      ),
-                      React.createElement('span', { className: 'text-sm font-semibold text-slate-200' },
-                        file ? file.name : "Choose a video file or drag & drop here"
-                      ),
-                      React.createElement('span', { className: 'text-xs text-slate-500 mt-1' }, 'MP4, MOV, MKV, WebM up to any length')
+                : e('div', { className: 'space-y-3' },
+                    e('label', {
+                      className: 'border-2 border-dashed border-slate-700 hover:border-purple-500/60 rounded-2xl p-8 flex flex-col items-center justify-center cursor-pointer transition-all bg-slate-950/40 hover:bg-slate-900/30'
+                    },
+                      e(Upload, { className: 'w-10 h-10 text-purple-400 mb-3' }),
+                      e('p', { className: 'text-sm font-bold text-white mb-1' }, file ? file.name : 'Choose a video file or drag and drop'),
+                      e('p', { className: 'text-xs text-slate-500' }, file ? `${(file.size / (1024 * 1024)).toFixed(1)} MB` : 'MP4, MOV, MKV, WebM up to 5GB'),
+                      e('input', {
+                        type: 'file',
+                        accept: 'video/*',
+                        onChange: (ev) => setFile(ev.target.files[0]),
+                        className: 'hidden'
+                      })
                     )
                   ),
 
-              // Customize toggle
-              React.createElement('div', null,
-                React.createElement('button', {
+              // Settings Toggle Button
+              e('div', { className: 'border-t border-slate-800/80 pt-4' },
+                e('button', {
                   type: 'button',
                   onClick: () => setShowSettings(!showSettings),
-                  className: 'flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-purple-300 transition-colors'
+                  className: 'flex items-center justify-between w-full text-xs font-bold text-slate-400 hover:text-white py-1'
                 },
-                  React.createElement(Sliders, { className: 'w-3.5 h-3.5 text-purple-400' }),
-                  React.createElement('span', null, 'Customize Clip Settings (Aspect Ratio, Subtitles, Duration, Clip Count)'),
-                  showSettings ? React.createElement(ChevronUp, { className: 'w-3.5 h-3.5' }) : React.createElement(ChevronDown, { className: 'w-3.5 h-3.5' })
-                )
-              ),
+                  e('div', { className: 'flex items-center gap-2' },
+                    e(Sliders, { className: 'w-4 h-4 text-purple-400' }),
+                    e('span', null, 'Advanced Clipping Settings (Aspect Ratio, Captions, Duration)')
+                  ),
+                  showSettings ? e(ChevronUp, { className: 'w-4 h-4' }) : e(ChevronDown, { className: 'w-4 h-4' })
+                ),
 
-              // Settings Drawer
-              showSettings && React.createElement('div', { className: 'bg-[#141624] border border-slate-800 rounded-2xl p-5 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-xs' },
-                // Aspect Ratio
-                React.createElement('div', null,
-                  React.createElement('label', { className: 'flex items-center gap-1.5 font-bold text-slate-300 mb-2' },
-                    React.createElement(LayoutTemplate, { className: 'w-3.5 h-3.5 text-indigo-400' }),
-                    'Aspect Ratio'
-                  ),
-                  React.createElement('select', {
-                    value: aspectRatio,
-                    onChange: (e) => setAspectRatio(e.target.value),
-                    className: 'w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-slate-200 focus:outline-none'
-                  },
-                    React.createElement('option', { value: '9:16' }, '9:16 (Shorts / Reels / TikTok)'),
-                    React.createElement('option', { value: '1:1' }, '1:1 (Square Feed)'),
-                    React.createElement('option', { value: '16:9' }, '16:9 (Landscape Highlights)')
-                  )
-                ),
-                // Subtitles
-                React.createElement('div', null,
-                  React.createElement('label', { className: 'flex items-center gap-1.5 font-bold text-slate-300 mb-2' },
-                    React.createElement(Type, { className: 'w-3.5 h-3.5 text-yellow-400' }),
-                    'Subtitle Style'
-                  ),
-                  React.createElement('select', {
-                    value: subtitleStyle,
-                    onChange: (e) => setSubtitleStyle(e.target.value),
-                    className: 'w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-slate-200 focus:outline-none'
-                  },
-                    React.createElement('option', { value: 'hormozi' }, 'Alex Hormozi (Yellow & Bold)'),
-                    React.createElement('option', { value: 'neon_green' }, 'Neon Cyber Green'),
-                    React.createElement('option', { value: 'clean_white' }, 'Clean Modern White'),
-                    React.createElement('option', { value: 'fire_red' }, 'Fire Red Punchy'),
-                    React.createElement('option', { value: 'none' }, 'None (No Subtitles)')
-                  )
-                ),
-                // Clip Count
-                React.createElement('div', null,
-                  React.createElement('label', { className: 'flex items-center gap-1.5 font-bold text-slate-300 mb-2' },
-                    React.createElement(Sparkles, { className: 'w-3.5 h-3.5 text-pink-400' }),
-                    'Max Clips'
-                  ),
-                  React.createElement('select', {
-                    value: maxClips,
-                    onChange: (e) => setMaxClips(e.target.value),
-                    className: 'w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-slate-200 focus:outline-none'
-                  },
-                    React.createElement('option', { value: '3' }, 'Top 3 Clips'),
-                    React.createElement('option', { value: '5' }, 'Top 5 Viral Clips'),
-                    React.createElement('option', { value: '8' }, 'Top 8 Clips'),
-                    React.createElement('option', { value: '10' }, 'Top 10 Clips')
-                  )
-                ),
-                // Duration
-                React.createElement('div', null,
-                  React.createElement('label', { className: 'flex items-center gap-1.5 font-bold text-slate-300 mb-2' },
-                    React.createElement(Clock, { className: 'w-3.5 h-3.5 text-emerald-400' }),
-                    'Duration'
-                  ),
-                  React.createElement('select', {
-                    value: `${minDuration}-${maxDuration}`,
-                    onChange: (e) => {
-                      const [min, max] = e.target.value.split('-').map(Number);
-                      setMinDuration(min);
-                      setMaxDuration(max);
+                // Settings Panel
+                showSettings && e('div', { className: 'mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-4 rounded-2xl bg-slate-950/60 border border-slate-800' },
+                  // Aspect Ratio
+                  e('div', { className: 'space-y-1.5' },
+                    e('label', { className: 'text-xs font-semibold text-slate-300 flex items-center gap-1.5' },
+                      e(LayoutTemplate, { className: 'w-3.5 h-3.5 text-purple-400' }),
+                      e('span', null, 'Aspect Ratio')
+                    ),
+                    e('select', {
+                      value: aspectRatio,
+                      onChange: (ev) => setAspectRatio(ev.target.value),
+                      className: 'w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white text-xs focus:ring-1 focus:ring-purple-500'
                     },
-                    className: 'w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-slate-200 focus:outline-none'
-                  },
-                    React.createElement('option', { value: '20-45' }, '20s - 45s (Fast Viral)'),
-                    React.createElement('option', { value: '30-60' }, '30s - 60s (Standard)'),
-                    React.createElement('option', { value: '45-90' }, '45s - 90s (In-depth)')
-                  )
-                ),
-                // Gemini API key
-                React.createElement('div', { className: 'sm:col-span-2 md:col-span-4 mt-2 pt-3 border-t border-slate-800 flex flex-col sm:flex-row items-center gap-3' },
-                  React.createElement('div', { className: 'flex items-center gap-2 text-slate-400 whitespace-nowrap' },
-                    React.createElement(Key, { className: 'w-3.5 h-3.5 text-amber-400' }),
-                    React.createElement('span', null, 'Gemini API Key (Optional):')
+                      e('option', { value: '9:16' }, '9:16 (TikTok, Shorts, Reels - Blurred BG)'),
+                      e('option', { value: '1:1' }, '1:1 (Instagram Feed / Square)'),
+                      e('option', { value: '16:9' }, '16:9 (Landscape / Original)')
+                    )
                   ),
-                  React.createElement('input', {
-                    type: 'password',
-                    placeholder: 'Leave blank for 100% Free Smart Heuristic Mode, or paste free Google AI Studio key',
-                    value: geminiApiKey,
-                    onChange: (e) => setGeminiApiKey(e.target.value),
-                    className: 'flex-1 w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-200 focus:outline-none'
-                  })
+
+                  // Subtitle Style
+                  e('div', { className: 'space-y-1.5' },
+                    e('label', { className: 'text-xs font-semibold text-slate-300 flex items-center gap-1.5' },
+                      e(Type, { className: 'w-3.5 h-3.5 text-purple-400' }),
+                      e('span', null, 'Subtitle Style')
+                    ),
+                    e('select', {
+                      value: subtitleStyle,
+                      onChange: (ev) => setSubtitleStyle(ev.target.value),
+                      className: 'w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white text-xs focus:ring-1 focus:ring-purple-500'
+                    },
+                      e('option', { value: 'hormozi' }, 'Alex Hormozi (Yellow + Emoji 💰)'),
+                      e('option', { value: 'neon_green' }, 'Cyber Neon Green'),
+                      e('option', { value: 'fire_red' }, 'Fire Red Impact 🔥'),
+                      e('option', { value: 'clean_white' }, 'Minimal Clean White'),
+                      e('option', { value: 'none' }, 'No Subtitles')
+                    )
+                  ),
+
+                  // Clip Duration
+                  e('div', { className: 'space-y-1.5' },
+                    e('label', { className: 'text-xs font-semibold text-slate-300 flex items-center gap-1.5' },
+                      e(Clock, { className: 'w-3.5 h-3.5 text-purple-400' }),
+                      e('span', null, `Clip Duration: ${minDuration}s - ${maxDuration}s`)
+                    ),
+                    e('div', { className: 'flex items-center gap-2' },
+                      e('input', {
+                        type: 'range',
+                        min: '15',
+                        max: '90',
+                        value: maxDuration,
+                        onChange: (ev) => setMaxDuration(ev.target.value),
+                        className: 'w-full accent-purple-600'
+                      })
+                    )
+                  ),
+
+                  // Number of clips
+                  e('div', { className: 'space-y-1.5' },
+                    e('label', { className: 'text-xs font-semibold text-slate-300 flex items-center gap-1.5' },
+                      e(Flame, { className: 'w-3.5 h-3.5 text-amber-400' }),
+                      e('span', null, 'Maximum Clips')
+                    ),
+                    e('select', {
+                      value: maxClips,
+                      onChange: (ev) => setMaxClips(ev.target.value),
+                      className: 'w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white text-xs focus:ring-1 focus:ring-purple-500'
+                    },
+                      e('option', { value: '3' }, '3 Best Clips'),
+                      e('option', { value: '5' }, '5 Best Clips (Recommended)'),
+                      e('option', { value: '10' }, '10 Best Clips')
+                    )
+                  ),
+
+                  // Optional Gemini API Key
+                  e('div', { className: 'sm:col-span-2 space-y-1.5' },
+                    e('label', { className: 'text-xs font-semibold text-slate-300 flex items-center justify-between' },
+                      e('span', { className: 'flex items-center gap-1.5' },
+                        e(Key, { className: 'w-3.5 h-3.5 text-purple-400' }),
+                        e('span', null, 'Google Gemini API Key (Optional)')
+                      ),
+                      e('span', { className: 'text-[10px] text-emerald-400 font-bold' }, 'Smart Heuristic is 100% Free')
+                    ),
+                    e('input', {
+                      type: 'password',
+                      value: geminiApiKey,
+                      onChange: (ev) => setGeminiApiKey(ev.target.value),
+                      placeholder: 'AIzaSy... (Leave empty to use built-in free Heuristic engine)',
+                      className: 'w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white placeholder-slate-600 text-xs focus:ring-1 focus:ring-purple-500'
+                    })
+                  )
                 )
               ),
 
               // Submit Button
-              React.createElement('button', {
+              e('button', {
                 type: 'submit',
-                disabled: isProcessing || (activeTab === 'youtube' ? !url.trim() : !file),
-                className: 'w-full py-4 rounded-2xl bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 text-white font-extrabold text-sm sm:text-base flex items-center justify-center gap-2 glow-btn disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer'
+                disabled: isProcessing,
+                className: `w-full py-4 rounded-2xl font-black text-sm tracking-wide text-white uppercase flex items-center justify-center gap-2 glow-btn ${
+                  isProcessing ? 'bg-slate-800 cursor-not-allowed opacity-60' : 'bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 hover:opacity-95'
+                }`
               },
-                React.createElement(Sparkles, { className: 'w-5 h-5 fill-white' }),
-                React.createElement('span', null, isProcessing ? 'Processing Video...' : '⚡ Generate Viral Clips Now (Free)')
+                isProcessing
+                  ? [e(Loader2, { key: 'l', className: 'w-5 h-5' }), e('span', { key: 't' }, 'Processing Video Moments...')]
+                  : [e(Sparkles, { key: 's', className: 'w-5 h-5' }), e('span', { key: 't' }, 'Generate Viral Clips (100% Free)')]
               )
             )
           ),
 
-          // Processing Status Bar
-          isProcessing && jobData && React.createElement('div', { className: 'max-w-4xl mx-auto bg-[#12141f] border border-purple-500/30 rounded-3xl p-6 sm:p-8 shadow-xl mb-10' },
-            React.createElement('div', { className: 'flex items-center justify-between gap-4 mb-4' },
-              React.createElement('div', { className: 'flex items-center gap-3' },
-                React.createElement('div', { className: 'w-10 h-10 rounded-2xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-purple-400' },
-                  React.createElement(Loader2, { className: 'w-5 h-5 animate-spin' })
+          // Real-time Pipeline Progress Status Box
+          isProcessing && jobData && e('div', { className: 'max-w-4xl mx-auto bg-gradient-to-b from-[#141726] to-[#0d0f19] border border-purple-500/30 rounded-3xl p-6 sm:p-8 shadow-2xl mb-10' },
+            e('div', { className: 'flex items-center justify-between mb-4' },
+              e('div', { className: 'flex items-center gap-3' },
+                e('div', { className: 'w-10 h-10 rounded-xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-purple-400' },
+                  e(Scissors, { className: 'w-5 h-5 animate-pulse' })
                 ),
-                React.createElement('div', null,
-                  React.createElement('h3', { className: 'font-extrabold text-white text-base sm:text-lg flex items-center gap-2' },
-                    React.createElement('span', null, 'Clipping in Progress'),
-                    React.createElement('span', { className: 'text-xs font-bold px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300' }, `${jobData.progress}%`)
-                  ),
-                  React.createElement('p', { className: 'text-xs sm:text-sm text-slate-400 mt-0.5' }, jobData.current_step)
-                )
-              )
-            ),
-            // Progress Bar
-            React.createElement('div', { className: 'w-full h-3 bg-slate-900 rounded-full overflow-hidden p-0.5 border border-slate-800' },
-              React.createElement('div', {
-                className: 'h-full bg-gradient-to-r from-purple-500 via-indigo-500 to-pink-500 rounded-full transition-all duration-500',
-                style: { width: `${Math.max(5, jobData.progress)}%` }
-              })
-            )
-          ),
-
-          // Clips Grid
-          jobData && jobData.clips && jobData.clips.length > 0 && React.createElement('div', { className: 'max-w-7xl mx-auto my-10' },
-            // Toolbar
-            React.createElement('div', { className: 'bg-[#121420] border border-slate-800 rounded-2xl p-5 mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xl' },
-              React.createElement('div', null,
-                React.createElement('h2', { className: 'text-xl sm:text-2xl font-black text-white flex items-center gap-2' },
-                  React.createElement(Sparkles, { className: 'w-6 h-6 text-purple-400 fill-purple-400' }),
-                  React.createElement('span', null, `Generated Viral Clips (${jobData.clips.length})`)
-                ),
-                React.createElement('p', { className: 'text-xs text-slate-400 mt-0.5' },
-                  'Ranked by AI virality score with animated captions and 9:16 vertical reframe.'
+                e('div', null,
+                  e('h3', { className: 'font-extrabold text-white text-base' }, 'Generating Your Highlights...'),
+                  e('p', { className: 'text-xs text-purple-300' }, jobData.current_step || 'Analyzing video audio...')
                 )
               ),
-              React.createElement('div', { className: 'flex flex-wrap items-center gap-3' },
-                // Filter
-                React.createElement('select', {
-                  value: filterScore,
-                  onChange: (e) => setFilterScore(Number(e.target.value)),
-                  className: 'bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-200'
-                },
-                  React.createElement('option', { value: 0 }, 'All Clips'),
-                  React.createElement('option', { value: 85 }, 'Score 85+ 🔥'),
-                  React.createElement('option', { value: 90 }, 'Score 90+ 🚀')
+              e('span', { className: 'font-black text-2xl text-purple-400' }, `${jobData.progress || 10}%`)
+            ),
+            // Progress Bar
+            e('div', { className: 'w-full bg-slate-900 rounded-full h-3 overflow-hidden border border-slate-800 p-0.5' },
+              e('div', {
+                className: 'bg-gradient-to-r from-purple-500 via-pink-500 to-indigo-500 h-full rounded-full transition-all duration-500',
+                style: { width: `${jobData.progress || 10}%` }
+              })
+            ),
+            e('div', { className: 'flex items-center justify-between mt-3 text-[11px] text-slate-400' },
+              e('span', null, 'Selective streaming (No gigabyte downloads)'),
+              e('span', null, jobData.status)
+            )
+          ),
+
+          // Results: Clips Showcase
+          jobData && jobData.clips && jobData.clips.length > 0 && e('div', { className: 'max-w-6xl mx-auto space-y-6' },
+            // Results Header
+            e('div', { className: 'flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-[#10121c] border border-slate-800 p-6 rounded-3xl' },
+              e('div', null,
+                e('div', { className: 'flex items-center gap-2 mb-1' },
+                  e(CheckCircle2, { className: 'w-5 h-5 text-emerald-400' }),
+                  e('h3', { className: 'font-black text-xl text-white' }, `Found ${jobData.clips.length} Viral Highlights!`)
                 ),
-                // Batch Download
-                activeJobId && React.createElement('a', {
+                e('p', { className: 'text-xs text-slate-400' },
+                  jobData.source_title ? `From: ${jobData.source_title}` : 'Clips extracted with high retention hooks.'
+                )
+              ),
+              e('div', { className: 'flex items-center gap-3 w-full sm:w-auto' },
+                e('a', {
                   href: `/api/jobs/${activeJobId}/download-zip`,
-                  download: true,
-                  className: 'px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 text-white font-bold text-xs flex items-center gap-2 shadow-lg shadow-emerald-600/20'
+                  className: 'w-full sm:w-auto px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-lg shadow-emerald-500/20'
                 },
-                  React.createElement(DownloadCloud, { className: 'w-4 h-4' }),
-                  React.createElement('span', null, 'Download All (ZIP)')
+                  e(DownloadCloud, { className: 'w-4 h-4' }),
+                  e('span', null, 'Download All (.ZIP)')
                 )
               )
             ),
 
-            // Grid Cards
-            React.createElement('div', { className: 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6' },
-              filteredClips.map((clip) =>
-                React.createElement('div', { key: clip.id, className: 'bg-[#121420] border border-slate-800 hover:border-purple-500/50 rounded-3xl overflow-hidden shadow-xl flex flex-col' },
-                  React.createElement('div', { className: 'relative bg-black aspect-[9/16] max-h-[460px] flex items-center justify-center' },
-                    React.createElement('video', {
+            // Clips Grid
+            e('div', { className: 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6' },
+              filteredClips.map((clip, idx) =>
+                e('div', { key: clip.id || idx, className: 'bg-[#10121c] border border-slate-800 hover:border-purple-500/50 rounded-3xl overflow-hidden flex flex-col transition-all shadow-lg group' },
+                  // Video Preview Player
+                  e('div', { className: 'relative bg-black aspect-[9/16] max-h-[380px] overflow-hidden' },
+                    e('video', {
                       src: clip.video_url,
                       poster: clip.thumbnail_url,
                       controls: true,
-                      className: 'w-full h-full object-contain'
-                    },
-                      React.createElement('track', { src: clip.vtt_url, kind: 'subtitles', srcLang: 'en', default: true })
+                      preload: 'metadata',
+                      className: 'w-full h-full object-cover'
+                    }),
+                    // Virality Badge
+                    e('div', { className: 'absolute top-3 left-3 px-3 py-1.5 rounded-full bg-slate-950/80 backdrop-blur-md border border-purple-500/40 flex items-center gap-1.5 shadow-md pointer-events-none' },
+                      e(Flame, { className: 'w-3.5 h-3.5 text-amber-400 fill-amber-400' }),
+                      e('span', { className: 'text-xs font-black text-white' }, `${clip.viral_score}/100`),
+                      e('span', { className: 'text-[10px] text-purple-300 font-semibold' }, 'VIRAL SCORE')
                     ),
-                    React.createElement('div', { className: 'absolute top-3 left-3 z-10' },
-                      React.createElement('div', { className: 'flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/75 backdrop-blur-md border border-purple-500/40 text-xs font-black text-white' },
-                        React.createElement(Flame, { className: 'w-3.5 h-3.5 text-amber-400 fill-amber-400' }),
-                        React.createElement('span', null, `${clip.viral_score}/100`)
-                      )
+                    // Duration Badge
+                    e('div', { className: 'absolute top-3 right-3 px-2.5 py-1 rounded-lg bg-black/70 backdrop-blur-md text-[11px] font-bold text-slate-300 pointer-events-none' },
+                      `${clip.duration}s`
                     )
                   ),
-                  React.createElement('div', { className: 'p-5 flex-1 flex flex-col justify-between' },
-                    React.createElement('div', null,
-                      React.createElement('h4', { className: 'font-extrabold text-white text-base leading-snug mb-2 line-clamp-2' }, clip.title),
-                      React.createElement('p', { className: 'text-xs text-slate-400 mb-3 line-clamp-2 bg-slate-900/60 p-2.5 rounded-xl border border-slate-800 italic' }, `"${clip.hook_text}"`),
-                      React.createElement('p', { className: 'text-[11px] text-purple-300/80 mb-4' },
-                        React.createElement('strong', { className: 'text-amber-400' }, 'Why it works: '),
+
+                  // Clip Metadata & Action Bar
+                  e('div', { className: 'p-5 flex-1 flex flex-col justify-between' },
+                    e('div', null,
+                      e('h4', { className: 'font-extrabold text-white text-base leading-snug mb-2 line-clamp-2' }, clip.title),
+                      e('p', { className: 'text-xs text-slate-400 mb-3 line-clamp-2 bg-slate-900/60 p-2.5 rounded-xl border border-slate-800 italic' }, `"${clip.hook_text}"`),
+                      e('p', { className: 'text-[11px] text-purple-300/80 mb-4' },
+                        e('strong', { className: 'text-amber-400' }, 'Why it works: '),
                         clip.viral_reason
                       )
                     ),
-                    React.createElement('div', { className: 'pt-3 border-t border-slate-800 flex flex-col gap-2' },
-                      React.createElement('a', {
+                    e('div', { className: 'pt-3 border-t border-slate-800 flex flex-col gap-2' },
+                      e('a', {
                         href: clip.video_url,
                         download: `${clip.title}.mp4`,
                         className: 'w-full py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-md'
                       },
-                        React.createElement(Download, { className: 'w-4 h-4' }),
-                        React.createElement('span', null, 'Download Clip (MP4)')
+                        e(Download, { className: 'w-4 h-4' }),
+                        e('span', null, 'Download Clip (MP4)')
                       ),
-                      React.createElement('div', { className: 'grid grid-cols-2 gap-2 text-xs' },
-                        React.createElement('a', {
+                      e('div', { className: 'grid grid-cols-2 gap-2 text-xs' },
+                        e('a', {
                           href: clip.srt_url,
                           download: `${clip.id}.srt`,
                           className: 'py-1.5 px-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold flex items-center justify-center gap-1 border border-slate-700'
                         },
-                          React.createElement(Subtitles, { className: 'w-3.5 h-3.5 text-yellow-400' }),
-                          React.createElement('span', null, '.SRT Subtitles')
+                          e(Subtitles, { className: 'w-3.5 h-3.5 text-yellow-400' }),
+                          e('span', null, '.SRT Subtitles')
                         ),
-                        React.createElement('button', {
+                        e('button', {
+                          type: 'button',
                           onClick: () => {
                             navigator.clipboard.writeText(`${clip.title}\n\n${clip.hook_text}\n\n#shorts #viral #reels #tiktok #clips`);
                             alert("Copied title and hashtags to clipboard!");
                           },
                           className: 'py-1.5 px-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold flex items-center justify-center gap-1 border border-slate-700'
                         },
-                          React.createElement(Share2, { className: 'w-3.5 h-3.5 text-pink-400' }),
-                          React.createElement('span', null, 'Copy Caption')
+                          e(Share2, { className: 'w-3.5 h-3.5 text-pink-400' }),
+                          e('span', null, 'Copy Caption')
                         )
                       )
                     )
@@ -546,17 +650,17 @@
           ),
 
           // Features Highlights
-          React.createElement('div', { className: 'mt-20 border-t border-slate-800 pt-16' },
-            React.createElement('div', { className: 'text-center mb-10' },
-              React.createElement('h3', { className: 'text-2xl sm:text-3xl font-extrabold text-white' },
+          e('div', { className: 'mt-20 border-t border-slate-800 pt-16' },
+            e('div', { className: 'text-center mb-10' },
+              e('h3', { className: 'text-2xl sm:text-3xl font-extrabold text-white' },
                 'Everything Top Clipping Software Does — ',
-                React.createElement('span', { className: 'bg-gradient-to-r from-purple-400 to-emerald-400 bg-clip-text text-transparent' }, 'Free Forever')
+                e('span', { className: 'bg-gradient-to-r from-purple-400 to-emerald-400 bg-clip-text text-transparent' }, 'Free Forever')
               ),
-              React.createElement('p', { className: 'text-xs sm:text-sm text-slate-400 mt-2 max-w-xl mx-auto' },
+              e('p', { className: 'text-xs sm:text-sm text-slate-400 mt-2 max-w-xl mx-auto' },
                 'Built for creators, podcasters, streamers, and agencies who need limitless clipping.'
               )
             ),
-            React.createElement('div', { className: 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6' },
+            e('div', { className: 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6' },
               [
                 { title: '10 Min to 24+ Hr Videos', desc: 'Selective time-slice streaming downloads only the 60s clips without downloading 40GB video files.', color: 'text-purple-400' },
                 { title: 'AI Hook & Virality Score', desc: 'Ranks top moments by scroll-stopping hooks, curiosity gaps, and audience retention metrics.', color: 'text-amber-400' },
@@ -565,9 +669,9 @@
                 { title: 'One-Click Batch Export', desc: 'Download individual MP4s, .SRT subtitle files, or export all generated clips as a ZIP archive.', color: 'text-cyan-400' },
                 { title: '100% Free & No Watermark', desc: 'No paid subscriptions, no monthly limits, no cloud fees. Built with open-source tools.', color: 'text-emerald-400' }
               ].map((f, i) =>
-                React.createElement('div', { key: i, className: 'bg-[#121420]/80 border border-slate-800/80 rounded-3xl p-6' },
-                  React.createElement('h4', { className: `font-extrabold text-base mb-1.5 ${f.color}` }, f.title),
-                  React.createElement('p', { className: 'text-xs text-slate-400 leading-relaxed' }, f.desc)
+                e('div', { key: i, className: 'bg-[#121420]/80 border border-slate-800/80 rounded-3xl p-6' },
+                  e('h4', { className: `font-extrabold text-base mb-1.5 ${f.color}` }, f.title),
+                  e('p', { className: 'text-xs text-slate-400 leading-relaxed' }, f.desc)
                 )
               )
             )
@@ -575,13 +679,13 @@
         ),
 
         // Footer
-        React.createElement('footer', { className: 'border-t border-slate-800/80 bg-[#0a0b12] py-8 text-center text-xs text-slate-500' },
-          React.createElement('p', { className: 'max-w-md mx-auto mb-2' },
+        e('footer', { className: 'border-t border-slate-800/80 bg-[#0a0b12] py-8 text-center text-xs text-slate-500' },
+          e('p', { className: 'max-w-md mx-auto mb-2' },
             'Clipper AI — Open Source 100% Free Video Highlights & Automated Clipping Platform'
           ),
-          React.createElement('p', null,
+          e('p', null,
             'Created for ',
-            React.createElement('a', {
+            e('a', {
               href: 'https://github.com/themohitkarn/Clipper',
               target: '_blank',
               rel: 'noopener noreferrer',
@@ -593,7 +697,7 @@
     }
 
     ReactDOM.createRoot(document.getElementById('root')).render(
-      React.createElement(React.StrictMode, null, React.createElement(App))
+      e(StrictMode, null, e(App))
     );
   </script>
 </body>
