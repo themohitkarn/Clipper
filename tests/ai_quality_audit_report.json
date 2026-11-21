@@ -1,0 +1,75 @@
+{
+  "languages": {
+    "english": {
+      "segments_count": 5,
+      "candidates_count": 3,
+      "top_candidate": {
+        "title": "Why Do 99 Percent Of Businesses... \ud83e\udd2f",
+        "hook_text": "Why do 99 percent of businesses fail in their first...",
+        "score": 99,
+        "reason": "High density of emotional trigger words and fast-paced conversational payoff.",
+        "duration": 18.0
+      }
+    },
+    "hindi": {
+      "segments_count": 5,
+      "candidates_count": 3,
+      "top_candidate": {
+        "title": "Ye Secret Formula Koi Nahi Batayega... \ud83e\udd2f",
+        "hook_text": "Ye secret formula koi nahi batayega jisse views 10 guna...",
+        "score": 86,
+        "reason": "High density of emotional trigger words and fast-paced conversational payoff.",
+        "duration": 18.5
+      }
+    },
+    "hinglish": {
+      "segments_count": 5,
+      "candidates_count": 3,
+      "top_candidate": {
+        "title": "Stop Scrolling What If I Told... \ud83e\udd2f",
+        "hook_text": "Stop scrolling! What if I told you AI can do...",
+        "score": 90,
+        "reason": "High density of emotional trigger words and fast-paced conversational payoff.",
+        "duration": 20.0
+      }
+    }
+  },
+  "boundary_quality": {
+    "candidate_count": 4,
+    "metrics": [
+      {
+        "duration": 22.0,
+        "ends_with_punctuation": true,
+        "starts_clean": true,
+        "char_count": 260
+      },
+      {
+        "duration": 21.8,
+        "ends_with_punctuation": true,
+        "starts_clean": true,
+        "char_count": 256
+      },
+      {
+        "duration": 24.8,
+        "ends_with_punctuation": true,
+        "starts_clean": true,
+        "char_count": 200
+      },
+      {
+        "duration": 18.8,
+        "ends_with_punctuation": true,
+        "starts_clean": true,
+        "char_count": 129
+      }
+    ],
+    "complete_sentences_pct": 100.0
+  },
+  "subtitle_sync": {
+    "clip_offset": 120.0,
+    "starts_at_zero": true,
+    "raw_srt_snippet": "1\n00:00:00,000 --> 00:00:05,000\nThis is at two minutes in original video.\n\n2\n00:00:05,500 --> 00:00:10,000\nAnd this is five seconds later."
+  },
+  "heuristic_vs_true_virality_analysis": {
+    "distinction_note": "Viral scores produced by the heuristic engine (50-99) reflect the presence of engagement patterns (hook density, curiosity questions, emotional power words, pacing, and 30-45s duration sweet spots). They MUST NOT be marketed as an empirical guarantee of algorithmic view count on social media, as true virality depends on external market factors including creator authority, topic saturation, thumbnail CTR, and audience demographics."
+  }
+}

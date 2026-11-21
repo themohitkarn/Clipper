@@ -16,7 +16,8 @@ class Transcriber:
         """
         try:
             from youtube_transcript_api import YouTubeTranscriptApi
-            transcript_list = YouTubeTranscriptApi.list_transcripts(video_id)
+            ytt = YouTubeTranscriptApi()
+            transcript_list = ytt.list(video_id)
             
             # Try to get manual English, then Hindi, then auto-generated
             transcript = None
@@ -48,8 +49,8 @@ class Transcriber:
                     text = str(getattr(item, "text", "")).strip()
 
                 if text:
-                    # Clean up music notes / sound effects like [Music], (Laughter)
-                    clean_text = re.sub(r"\[.*?\]|\(.*?\)", "", text).strip()
+                    # Clean up music notes / sound effects like [Music], (Laughter), ♪
+                    clean_text = re.sub(r"\[.*?\]|\(.*?\)|[♪♫♬🎵]", "", text).strip()
                     if clean_text:
                         formatted.append({
                             "start": round(start, 2),

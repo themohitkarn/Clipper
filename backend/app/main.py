@@ -1,4 +1,5 @@
 import os
+import uuid
 import shutil
 import asyncio
 from pathlib import Path
@@ -47,9 +48,22 @@ def health_check():
 @app.get("/api/system")
 def system_status():
     ffmpeg, _ = find_system_ffmpeg()
+    import shutil
+    total, used, free = shutil.disk_usage(TEMP_DIR)
+    free_gb = round(free / (1024 ** 3), 1)
+    
+    # Check yt-dlp availability
+    from .services.downloader import VideoDownloader
+    dl = VideoDownloader()
+    cmd = dl._get_ytdlp_cmd()
+    
     return {
         "ready": bool(ffmpeg),
         "ffmpeg_installed": bool(ffmpeg),
+        "ffmpeg_available": bool(ffmpeg),
+        "ffmpeg_path": ffmpeg,
+        "ytdlp_available": bool(cmd),
+        "temp_disk_free_gb": free_gb,
         "gemini_api_configured": bool(os.getenv("GEMINI_API_KEY")),
         "features": [
             "Smart 24-Hour Video Selective Clipping",
@@ -62,7 +76,8 @@ def system_status():
     }
 
 @app.post("/api/process", response_model=dict)
-def process_url(request: ProcessUrlRequest):
+@app.post("/api/process-url", response_model=dict)
+async def process_url(request: ProcessUrlRequest):
     """Start clipping job from YouTube URL."""
     if not request.url or ("youtube.com" not in request.url and "youtu.be" not in request.url):
         raise HTTPException(status_code=400, detail="Please provide a valid YouTube video URL.")

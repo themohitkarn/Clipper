@@ -17,27 +17,49 @@ class VideoDownloader:
         self.temp_dir = temp_dir or TEMP_DIR
 
     def _get_ytdlp_cmd(self) -> list[str]:
-        """Find yt-dlp executable: local bin, virtualenv, or system PATH."""
-        # Check project bin
-        bin_exe = Path(__file__).resolve().parent.parent.parent.parent / "bin" / "yt-dlp.exe"
-        if bin_exe.exists():
-            return [str(bin_exe)]
+        """Find yt-dlp executable: virtualenv python module, system PATH, or local bin."""
+        import sys
+        # 1. First priority: current python environment running yt_dlp module
+        try:
+            import yt_dlp
+            return [sys.executable, "-m", "yt_dlp"]
+        except ImportError:
+            pass
 
-        # Check venv
+        # 2. Check virtualenv python
         venv_py = Path(__file__).resolve().parent.parent.parent.parent / ".venv" / "Scripts" / "python.exe"
         if venv_py.exists():
-            # Check if yt_dlp module is available
             return [str(venv_py), "-m", "yt_dlp"]
 
-        # Check system yt-dlp
+        # 3. Check system yt-dlp
         system_ytdlp = shutil.which("yt-dlp")
         if system_ytdlp:
             return [system_ytdlp]
+
+        # 4. Check project bin
+        bin_exe = Path(__file__).resolve().parent.parent.parent.parent / "bin" / "yt-dlp.exe"
+        if bin_exe.exists():
+            return [str(bin_exe)]
 
         return ["python", "-m", "yt_dlp"]
 
     def extract_info(self, url: str) -> Dict[str, Any]:
         """Fetch video metadata quickly without downloading the media payload."""
+        local_path = Path(url)
+        if local_path.exists() and local_path.is_file():
+            from ..utils.ffmpeg_helper import get_media_info
+            media_info = get_media_info(url)
+            duration = media_info.get("duration", 0.0) if media_info else 0.0
+            return {
+                "id": local_path.stem,
+                "title": local_path.name,
+                "duration": duration,
+                "channel": "Local Upload",
+                "thumbnail": "",
+                "description": "Uploaded video file",
+                "url": url
+            }
+
         cmd = self._get_ytdlp_cmd() + [
             "--dump-json",
             "--no-playlist",
@@ -98,6 +120,23 @@ class VideoDownloader:
         """
         output_path.parent.mkdir(parents=True, exist_ok=True)
         ffmpeg_exe = get_ffmpeg_path()
+
+        # If url is a local file on disk, slice directly via FFmpeg without invoking yt-dlp
+        local_path = Path(url)
+        if local_path.exists() and local_path.is_file():
+            duration = end_seconds - start_seconds
+            cmd = [
+                ffmpeg_exe, "-y",
+                "-ss", str(start_seconds),
+                "-i", str(local_path),
+                "-t", str(duration),
+                "-c:v", "libx264", "-c:a", "aac",
+                "-preset", "veryfast",
+                str(output_path)
+            ]
+            res = subprocess.run(cmd, capture_output=True, text=True)
+            return output_path.exists() and output_path.stat().st_size > 1000
+
         ffmpeg_dir = str(Path(ffmpeg_exe).parent)
 
         # Format start and end as HH:MM:SS

@@ -1,0 +1,53 @@
+{
+  "transcripts": {
+    "dQw4w9WgXcQ": {
+      "type": "English (Music/Pop)",
+      "success": true,
+      "elapsed_seconds": 2.88,
+      "segments_count": 56,
+      "word_count": 352,
+      "detected_duration_sec": 211.3
+    },
+    "jNQXAC9IVRw": {
+      "type": "First YouTube Video (Short/Eng)",
+      "success": true,
+      "elapsed_seconds": 4.278,
+      "segments_count": 5,
+      "word_count": 38,
+      "detected_duration_sec": 18.9
+    },
+    "kxouC8EC5zg": {
+      "type": "Hindi / Hinglish Tech Video",
+      "success": false,
+      "elapsed_seconds": 3.488,
+      "segments_count": 0,
+      "word_count": 0,
+      "detected_duration_sec": 0.0
+    },
+    "INVALID_ID_999": {
+      "type": "Non-existent Video (Error Test)",
+      "success": false,
+      "elapsed_seconds": 3.095,
+      "segments_count": 0,
+      "word_count": 0,
+      "detected_duration_sec": 0.0
+    }
+  },
+  "section_downloads": {
+    "single_section": {
+      "video_id": "jNQXAC9IVRw",
+      "section": "5.0s - 15.0s (Duration: 10.0s)",
+      "download_success": true,
+      "elapsed_seconds": 6.68,
+      "downloaded_bytes": 354393,
+      "downloaded_mb": 0.34,
+      "full_video_duration": 19.0
+    },
+    "recovery_resilience": {
+      "handled_gracefully": true,
+      "elapsed_seconds": 6.38,
+      "file_created": false
+    }
+  },
+  "summary": {}
+}

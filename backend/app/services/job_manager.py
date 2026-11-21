@@ -38,8 +38,16 @@ class JobManager:
             current_step="Job queued for processing...",
             clips=[]
         )
-        # Launch pipeline in background asyncio task
-        asyncio.create_task(self._run_pipeline(job_id, request))
+        # Launch pipeline safely across any execution context
+        try:
+            loop = asyncio.get_running_loop()
+            loop.create_task(self._run_pipeline(job_id, request))
+        except RuntimeError:
+            import threading
+            threading.Thread(
+                target=lambda: asyncio.run(self._run_pipeline(job_id, request)),
+                daemon=True
+            ).start()
         return job_id
 
     def get_job(self, job_id: str) -> Optional[JobStatusResponse]:

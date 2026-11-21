@@ -7,6 +7,7 @@ DATA_DIR = BASE_DIR / "data"
 TEMP_DIR = DATA_DIR / "temp"
 OUTPUTS_DIR = DATA_DIR / "outputs"
 THUMBNAILS_DIR = DATA_DIR / "thumbnails"
+FRONTEND_DIST = BASE_DIR / "frontend" / "dist"
 
 # Ensure all directories exist
 for directory in [DATA_DIR, TEMP_DIR, OUTPUTS_DIR, THUMBNAILS_DIR]:

@@ -176,10 +176,9 @@ class ViralDetector:
         candidates: List[Dict[str, Any]],
         target_count: int
     ) -> List[Dict[str, Any]]:
-        """Call Google Gemini 2.5/1.5 Flash (Free Tier) to find peak viral clips."""
-        from google import genai
-        client = genai.Client(api_key=self.api_key)
-
+        """Call Google Gemini 2.5/1.5 Flash (Free Tier) via REST to find peak viral clips."""
+        import requests
+        
         # Select a representative sample of up to 25 candidates across the video
         stride = max(1, len(candidates) // 25)
         sampled = candidates[::stride][:25]
@@ -203,12 +202,21 @@ Respond ONLY with a valid JSON array of objects with keys:
 - "viral_score": integer (0 to 100)
 - "viral_reason": string (1-sentence explanation of why it will perform well)
 """
-        response = client.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=prompt,
-            config={"response_mime_type": "application/json"}
-        )
-        data = json.loads(response.text)
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={self.api_key}"
+        payload = {
+            "contents": [{
+                "parts": [{"text": prompt}]
+            }],
+            "generationConfig": {
+                "responseMimeType": "application/json"
+            }
+        }
+        resp = requests.post(url, json=payload, timeout=30)
+        resp.raise_for_status()
+        data_json = resp.json()
+        raw_text = data_json["candidates"][0]["content"]["parts"][0]["text"]
+        data = json.loads(raw_text)
+
         results = []
         for item in data:
             idx = item.get("id")
