@@ -19,29 +19,33 @@ class VideoDownloader:
     def _get_ytdlp_cmd(self) -> list[str]:
         """Find yt-dlp executable: virtualenv python module, system PATH, or local bin."""
         import sys
+        base_cmd = ["python", "-m", "yt_dlp"]
         # 1. First priority: current python environment running yt_dlp module
         try:
             import yt_dlp
-            return [sys.executable, "-m", "yt_dlp"]
+            base_cmd = [sys.executable, "-m", "yt_dlp"]
         except ImportError:
-            pass
+            # 2. Check virtualenv python
+            venv_py = Path(__file__).resolve().parent.parent.parent.parent / ".venv" / "Scripts" / "python.exe"
+            if venv_py.exists():
+                base_cmd = [str(venv_py), "-m", "yt_dlp"]
+            else:
+                # 3. Check system yt-dlp
+                system_ytdlp = shutil.which("yt-dlp")
+                if system_ytdlp:
+                    base_cmd = [system_ytdlp]
+                else:
+                    # 4. Check project bin
+                    bin_exe = Path(__file__).resolve().parent.parent.parent.parent / "bin" / "yt-dlp.exe"
+                    if bin_exe.exists():
+                        base_cmd = [str(bin_exe)]
 
-        # 2. Check virtualenv python
-        venv_py = Path(__file__).resolve().parent.parent.parent.parent / ".venv" / "Scripts" / "python.exe"
-        if venv_py.exists():
-            return [str(venv_py), "-m", "yt_dlp"]
+        # Check for cookies.txt in root to bypass YouTube bot blocks automatically
+        cookies_txt = Path(__file__).resolve().parent.parent.parent.parent / "cookies.txt"
+        if cookies_txt.exists():
+            return base_cmd + ["--cookies", str(cookies_txt)]
 
-        # 3. Check system yt-dlp
-        system_ytdlp = shutil.which("yt-dlp")
-        if system_ytdlp:
-            return [system_ytdlp]
-
-        # 4. Check project bin
-        bin_exe = Path(__file__).resolve().parent.parent.parent.parent / "bin" / "yt-dlp.exe"
-        if bin_exe.exists():
-            return [str(bin_exe)]
-
-        return ["python", "-m", "yt_dlp"]
+        return base_cmd
 
     def extract_info(self, url: str) -> Dict[str, Any]:
         """Fetch video metadata quickly without downloading the media payload."""
@@ -150,8 +154,9 @@ class VideoDownloader:
         
         cmd = self._get_ytdlp_cmd() + [
             "--download-sections", time_range,
-            "-f", "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best",
+            "-f", "bestvideo[height<=1080][ext=mp4]+bestaudio[ext=m4a]/best[height<=1080][ext=mp4]/best[height<=720]/best",
             "--merge-output-format", "mp4",
+            "--downloader-args", "ffmpeg:-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 4",
             "--ffmpeg-location", ffmpeg_dir,
             "-o", str(output_path),
             "--force-overwrites",
@@ -160,7 +165,10 @@ class VideoDownloader:
         ]
 
         logger.info(f"Downloading clip section {time_range} from {url}...")
-        res = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace")
+        try:
+            res = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=60)
+        except subprocess.TimeoutExpired:
+            logger.warning(f"Section download timed out for {time_range}. Trying direct stream fallback.")
         
         if output_path.exists() and output_path.stat().st_size > 1000:
             return True
@@ -191,6 +199,7 @@ class VideoDownloader:
             ffmpeg_exe = get_ffmpeg_path()
             ffmpeg_cmd = [
                 ffmpeg_exe, "-y",
+                "-reconnect", "1", "-reconnect_streamed", "1", "-reconnect_delay_max", "4",
                 "-ss", str(start_seconds),
                 "-i", stream_url,
                 "-t", str(duration),
