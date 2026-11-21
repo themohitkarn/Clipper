@@ -27,21 +27,18 @@ export default function ProcessingStatus({ job }) {
 
   return (
     <div className="w-full max-w-4xl mx-auto my-6 px-4">
-      <div className="bg-[#12141f] border border-purple-500/30 rounded-3xl p-6 sm:p-8 shadow-xl relative overflow-hidden">
-        
-        {/* Glow */}
-        <div className="absolute top-0 right-0 w-60 h-60 bg-purple-500/10 rounded-full blur-2xl"></div>
+      <div className="bg-[#0f1422] border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-xl relative overflow-hidden">
 
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-purple-400">
+            <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
               <Loader2 className="w-5 h-5 animate-spin" />
             </div>
             <div>
-              <h3 className="font-extrabold text-white text-base sm:text-lg flex items-center gap-2">
+              <h3 className="font-bold text-white text-base sm:text-lg flex items-center gap-2">
                 <span>Clipping in Progress</span>
-                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300">
+                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400">
                   {job.progress}%
                 </span>
               </h3>
@@ -62,7 +59,7 @@ export default function ProcessingStatus({ job }) {
         {/* Progress Bar */}
         <div className="w-full h-3 bg-slate-900 rounded-full overflow-hidden p-0.5 border border-slate-800 mb-6">
           <div
-            className="h-full bg-gradient-to-r from-purple-500 via-indigo-500 to-pink-500 rounded-full transition-all duration-500 shadow-lg shadow-purple-500/50"
+            className="h-full bg-blue-600 rounded-full transition-all duration-300"
             style={{ width: `${Math.max(5, job.progress)}%` }}
           ></div>
         </div>

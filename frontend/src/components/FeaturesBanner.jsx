@@ -45,7 +45,7 @@ export default function FeaturesBanner() {
     <div className="w-full max-w-7xl mx-auto my-16 px-4">
       <div className="text-center mb-10">
         <h3 className="text-2xl sm:text-3xl font-extrabold text-white">
-          Everything Top Clipping Software Does — <span className="bg-gradient-to-r from-purple-400 to-emerald-400 bg-clip-text text-transparent">Free Forever</span>
+          Everything Top Clipping Software Does — <span className="text-blue-500">Free Forever</span>
         </h3>
         <p className="text-xs sm:text-sm text-slate-400 mt-2 max-w-xl mx-auto">
           Built for creators, podcasters, streamers, and agencies who need limitless clipping.

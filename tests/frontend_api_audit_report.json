@@ -16,7 +16,9 @@
     ],
     "dist_directory_exists": true,
     "dist_files": [
-      "index.html"
+      "index.html",
+      "react-dom.min.js",
+      "react.min.js"
     ],
     "is_dist_standalone": true
   },
@@ -35,12 +37,12 @@
   },
   "upload_test": {
     "status_code": 200,
-    "job_id": "6d9770a4",
+    "job_id": "e8754901",
     "status": "queued"
   },
   "url_test": {
     "status_code": 200,
-    "job_id": "a1cac3c8",
+    "job_id": "a92ad426",
     "status": "queued"
   },
   "error_handling": {

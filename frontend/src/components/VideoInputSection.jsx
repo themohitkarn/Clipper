@@ -53,12 +53,12 @@ export default function VideoInputSection({ onSubmitUrl, onUploadFile, isProcess
       
       {/* Hero Headline */}
       <div className="text-center mb-8">
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-xs font-semibold mb-3">
-          <Sparkles className="w-3.5 h-3.5" />
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-800 border border-slate-700 text-slate-300 text-xs font-semibold mb-3">
+          <Sparkles className="w-3.5 h-3.5 text-blue-400" />
           <span>The Free Alternative to Opus Clip, Munch & Klap</span>
         </div>
-        <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-white mb-3">
-          Turn Any Video into <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400 bg-clip-text text-transparent">Viral Shorts</span> in Seconds
+        <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white mb-3">
+          Turn Any Video into <span className="text-blue-500">Viral Shorts</span> in Seconds
         </h1>
         <p className="text-slate-400 text-sm sm:text-base max-w-2xl mx-auto">
           Works with 10-minute clips or 24-hour long livestreams. High hook detection, auto 9:16 vertical reframe, and animated captions. 100% Free.
@@ -66,20 +66,16 @@ export default function VideoInputSection({ onSubmitUrl, onUploadFile, isProcess
       </div>
 
       {/* Main Card */}
-      <div className="bg-[#10121c] border border-slate-800/90 rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
-        
-        {/* Glow accent */}
-        <div className="absolute -top-24 -left-24 w-72 h-72 bg-purple-600/15 rounded-full blur-3xl pointer-events-none"></div>
-        <div className="absolute -bottom-24 -right-24 w-72 h-72 bg-pink-600/15 rounded-full blur-3xl pointer-events-none"></div>
+      <div className="bg-[#0f1422] border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-xl relative overflow-hidden">
 
         {/* Tab Switcher */}
-        <div className="flex p-1.5 bg-slate-900/90 border border-slate-800 rounded-2xl max-w-md mx-auto mb-6">
+        <div className="flex p-1.5 bg-slate-900 border border-slate-800 rounded-xl max-w-md mx-auto mb-6">
           <button
             type="button"
             onClick={() => setActiveTab('youtube')}
-            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-all ${
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-bold transition-all ${
               activeTab === 'youtube'
-                ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md'
+                ? 'bg-blue-600 text-white'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
@@ -89,13 +85,13 @@ export default function VideoInputSection({ onSubmitUrl, onUploadFile, isProcess
           <button
             type="button"
             onClick={() => setActiveTab('upload')}
-            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-all ${
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-bold transition-all ${
               activeTab === 'upload'
-                ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md'
+                ? 'bg-blue-600 text-white'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            <Upload className="w-4 h-4 text-emerald-400" />
+            <Upload className="w-4 h-4" />
             Upload File
           </button>
         </div>
@@ -265,9 +261,9 @@ export default function VideoInputSection({ onSubmitUrl, onUploadFile, isProcess
           <button
             type="submit"
             disabled={isProcessing || (activeTab === 'youtube' ? !url.trim() : !file)}
-            className="w-full py-4 rounded-2xl bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 text-white font-extrabold text-sm sm:text-base flex items-center justify-center gap-2 glow-btn disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            className="w-full py-3.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm sm:text-base flex items-center justify-center gap-2 disabled:bg-slate-800 disabled:text-slate-500 disabled:cursor-not-allowed cursor-pointer transition-all shadow-md"
           >
-            <Sparkles className="w-5 h-5 fill-white" />
+            <Sparkles className="w-5 h-5 text-white" />
             <span>{isProcessing ? "Processing Video..." : "⚡ Generate Viral Clips Now (Free)"}</span>
           </button>
 
