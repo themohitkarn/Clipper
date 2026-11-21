@@ -12,7 +12,7 @@ export default function VideoInputSection({ onSubmitUrl, onUploadFile, isProcess
   const [subtitleStyle, setSubtitleStyle] = useState('hormozi');
   const [minDuration, setMinDuration] = useState(20);
   const [maxDuration, setMaxDuration] = useState(60);
-  const [maxClips, setMaxClips] = useState(5);
+  const [maxClips, setMaxClips] = useState(10);
   const [geminiApiKey, setGeminiApiKey] = useState('');
 
   const sampleVideos = [
@@ -202,20 +202,45 @@ export default function VideoInputSection({ onSubmitUrl, onUploadFile, isProcess
 
               {/* Clip Count */}
               <div>
-                <label className="flex items-center gap-1.5 font-bold text-slate-300 mb-2">
-                  <Sparkles className="w-3.5 h-3.5 text-pink-400" />
-                  Max Clips
-                </label>
-                <select
-                  value={maxClips}
-                  onChange={(e) => setMaxClips(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:border-purple-500"
-                >
-                  <option value="3">Top 3 Clips</option>
-                  <option value="5">Top 5 Viral Clips</option>
-                  <option value="8">Top 8 Clips</option>
-                  <option value="10">Top 10 Clips</option>
-                </select>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="flex items-center gap-1.5 font-bold text-slate-300">
+                    <Sparkles className="w-3.5 h-3.5 text-pink-400" />
+                    Target Clips
+                  </label>
+                  <span className="text-[11px] text-blue-400 font-bold">{maxClips} Clips</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <select
+                    value={[3, 5, 10, 15, 20, 25, 30, 35, 36, 40, 50].includes(Number(maxClips)) ? String(maxClips) : 'custom'}
+                    onChange={(e) => {
+                      if (e.target.value !== 'custom') setMaxClips(Number(e.target.value));
+                    }}
+                    className="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:border-blue-500"
+                  >
+                    <option value="3">Top 3 Clips</option>
+                    <option value="5">Top 5 Viral Clips</option>
+                    <option value="10">Top 10 Clips (Standard)</option>
+                    <option value="15">Top 15 Clips (Long Video)</option>
+                    <option value="20">Top 20 Clips (1-2 Hr Video)</option>
+                    <option value="25">Top 25 Clips (2+ Hr Video)</option>
+                    <option value="30">Top 30 Clips (Long Stream)</option>
+                    <option value="35">Top 35 Clips (Full Highlights) 🔥</option>
+                    <option value="36">Top 36 Clips (Max Coverage) 🔥</option>
+                    <option value="40">Top 40 Clips (Marathon Video)</option>
+                    <option value="50">Top 50 Clips (24-Hour Stream)</option>
+                    <option value="custom">Custom Quantity...</option>
+                  </select>
+                  <input
+                    type="number"
+                    min="1"
+                    max="100"
+                    value={maxClips}
+                    onChange={(e) => setMaxClips(Math.max(1, Math.min(100, parseInt(e.target.value) || 1)))}
+                    title="Type exact number of clips (e.g. 10, 35, 36)"
+                    placeholder="Qty"
+                    className="w-16 bg-slate-900 border border-slate-700 rounded-xl px-2 py-2 text-slate-200 text-center font-bold focus:outline-none focus:border-blue-500"
+                  />
+                </div>
               </div>
 
               {/* Clip Duration */}

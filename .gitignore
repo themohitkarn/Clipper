@@ -10,6 +10,7 @@ __pycache__/
 *.so
 
 # Data Directories
+temp/
 data/temp/*
 !data/temp/.gitkeep
 data/outputs/*

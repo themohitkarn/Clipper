@@ -92,7 +92,7 @@ async def upload_video(
     subtitle_style: str = Form("hormozi"),
     min_duration: int = Form(20),
     max_duration: int = Form(60),
-    max_clips: int = Form(5),
+    max_clips: int = Form(10),
     gemini_api_key: Optional[str] = Form(None)
 ):
     """Upload local video file and process clips."""

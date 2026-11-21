@@ -5,9 +5,9 @@ class ProcessUrlRequest(BaseModel):
     url: str
     aspect_ratio: str = Field(default="9:16", description="Target aspect ratio: 9:16, 1:1, or 16:9")
     subtitle_style: str = Field(default="hormozi", description="hormozi, neon_green, clean_white, fire_red, or none")
-    min_duration: int = Field(default=20, ge=10, le=120)
-    max_duration: int = Field(default=60, ge=15, le=180)
-    max_clips: int = Field(default=5, ge=1, le=20)
+    min_duration: int = Field(default=20, ge=10, le=180)
+    max_duration: int = Field(default=60, ge=15, le=300)
+    max_clips: int = Field(default=10, ge=1, le=100)
     gemini_api_key: Optional[str] = None
 
 class ClipItem(BaseModel):

@@ -156,7 +156,7 @@
       const [subtitleStyle, setSubtitleStyle] = useState('hormozi');
       const [minDuration, setMinDuration] = useState(20);
       const [maxDuration, setMaxDuration] = useState(60);
-      const [maxClips, setMaxClips] = useState(5);
+      const [maxClips, setMaxClips] = useState(10);
       const [geminiApiKey, setGeminiApiKey] = useState('');
 
       // Job State
@@ -468,18 +468,44 @@
 
                   // Number of clips
                   e('div', { className: 'space-y-1.5' },
-                    e('label', { className: 'text-xs font-semibold text-slate-300 flex items-center gap-1.5' },
-                      e(Flame, { className: 'w-3.5 h-3.5 text-amber-400' }),
-                      e('span', null, 'Maximum Clips')
+                    e('label', { className: 'text-xs font-semibold text-slate-300 flex items-center justify-between' },
+                      e('span', { className: 'flex items-center gap-1.5' },
+                        e(Flame, { className: 'w-3.5 h-3.5 text-amber-400' }),
+                        e('span', null, 'Target Clips')
+                      ),
+                      e('span', { className: 'text-[11px] text-blue-400 font-bold' }, `${maxClips} Clips`)
                     ),
-                    e('select', {
-                      value: maxClips,
-                      onChange: (ev) => setMaxClips(ev.target.value),
-                      className: 'w-full p-2.5 rounded-lg bg-slate-800 border border-slate-700 text-white text-xs focus:ring-1 focus:ring-blue-500'
-                    },
-                      e('option', { value: '3' }, '3 Best Clips'),
-                      e('option', { value: '5' }, '5 Best Clips (Recommended)'),
-                      e('option', { value: '10' }, '10 Best Clips')
+                    e('div', { className: 'flex items-center gap-2' },
+                      e('select', {
+                        value: [3, 5, 10, 15, 20, 25, 30, 35, 36, 40, 50].includes(Number(maxClips)) ? String(maxClips) : 'custom',
+                        onChange: (ev) => {
+                          if (ev.target.value !== 'custom') setMaxClips(Number(ev.target.value));
+                        },
+                        className: 'flex-1 p-2.5 rounded-lg bg-slate-800 border border-slate-700 text-white text-xs focus:ring-1 focus:ring-blue-500'
+                      },
+                        e('option', { value: '3' }, '3 Best Clips'),
+                        e('option', { value: '5' }, '5 Best Clips'),
+                        e('option', { value: '10' }, '10 Best Clips (Standard)'),
+                        e('option', { value: '15' }, '15 Clips (Long Video)'),
+                        e('option', { value: '20' }, '20 Clips (1-2 Hr Video)'),
+                        e('option', { value: '25' }, '25 Clips (2+ Hr Video)'),
+                        e('option', { value: '30' }, '30 Clips (Long Stream)'),
+                        e('option', { value: '35' }, '35 Clips (Full Coverage) 🔥'),
+                        e('option', { value: '36' }, '36 Clips (Max Highlights) 🔥'),
+                        e('option', { value: '40' }, '40 Clips (Marathon Video)'),
+                        e('option', { value: '50' }, '50 Clips (24-Hour Stream)'),
+                        e('option', { value: 'custom' }, 'Custom Quantity...')
+                      ),
+                      e('input', {
+                        type: 'number',
+                        min: '1',
+                        max: '100',
+                        value: maxClips,
+                        onChange: (ev) => setMaxClips(Math.max(1, Math.min(100, parseInt(ev.target.value) || 1))),
+                        placeholder: 'Qty',
+                        title: 'Type exact number of clips (e.g. 10, 35, 36)',
+                        className: 'w-20 p-2.5 rounded-lg bg-slate-800 border border-slate-700 text-white text-xs font-bold text-center focus:ring-1 focus:ring-blue-500'
+                      })
                     )
                   ),
 

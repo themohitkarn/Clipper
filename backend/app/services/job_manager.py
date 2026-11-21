@@ -168,6 +168,17 @@ class JobManager:
                     thumb_path
                 )
 
+                if not final_clip_path.exists() or final_clip_path.stat().st_size < 1000:
+                    if raw_clip_path.exists() and raw_clip_path.stat().st_size > 1000:
+                        import shutil
+                        shutil.copy2(raw_clip_path, final_clip_path)
+
+                if not thumb_path.exists() and final_clip_path.exists():
+                    try:
+                        self.video_proc.generate_thumbnail(final_clip_path, thumb_path)
+                    except Exception:
+                        pass
+
                 processed_clips.append(ClipItem(
                     id=clip_id,
                     title=moment["title"],

@@ -37,7 +37,7 @@ class ViralDetector:
             return self._generate_timeline_fallback(video_duration, target_count, min_duration, max_duration)
 
         # 1. Group individual subtitle lines into candidate blocks
-        candidates = self._create_candidate_blocks(transcript_segments, min_duration, max_duration)
+        candidates = self._create_candidate_blocks(transcript_segments, min_duration, max_duration, target_count)
         if not candidates:
             return self._generate_timeline_fallback(video_duration, target_count, min_duration, max_duration)
 
@@ -53,19 +53,20 @@ class ViralDetector:
         if not scored_clips:
             scored_clips = self._score_with_heuristics(candidates, target_count)
 
-        # Ensure no overlap and sort by virality score
-        return self._deduplicate_and_sort(scored_clips, target_count)
+        # Ensure no overlap and fill up to target_count
+        return self._deduplicate_and_sort(scored_clips, target_count, video_duration, min_duration, max_duration)
 
     def _create_candidate_blocks(
         self,
         segments: List[Dict[str, Any]],
         min_duration: float,
-        max_duration: float
+        max_duration: float,
+        target_count: int = 10
     ) -> List[Dict[str, Any]]:
         """Combine subtitle lines into smooth, cohesive chunks between min_duration and max_duration."""
         candidates = []
         n = len(segments)
-        step = max(1, n // 80) if n > 100 else 1  # For 24-hr transcripts, stride dynamically
+        step = max(1, n // max(120, target_count * 6)) if n > 150 else 1  # Dense sampling across long videos
 
         for i in range(0, n, step):
             start_time = segments[i]["start"]
@@ -179,9 +180,10 @@ class ViralDetector:
         """Call Google Gemini 2.5/1.5 Flash (Free Tier) via REST to find peak viral clips."""
         import requests
         
-        # Select a representative sample of up to 25 candidates across the video
-        stride = max(1, len(candidates) // 25)
-        sampled = candidates[::stride][:25]
+        # Select an adequate sample size to cover the requested target_count
+        sample_size = min(len(candidates), max(50, target_count * 3))
+        stride = max(1, len(candidates) // sample_size)
+        sampled = candidates[::stride][:sample_size]
 
         prompt = f"""
 You are an expert viral content strategist for TikTok, YouTube Shorts, and Instagram Reels.
@@ -237,14 +239,18 @@ Respond ONLY with a valid JSON array of objects with keys:
     def _deduplicate_and_sort(
         self,
         clips: List[Dict[str, Any]],
-        target_count: int
+        target_count: int,
+        video_duration: float = 300.0,
+        min_duration: float = 20.0,
+        max_duration: float = 60.0
     ) -> List[Dict[str, Any]]:
         """Remove overlapping clips and pick the highest scoring unique moments."""
         selected: List[Dict[str, Any]] = []
+
+        # 1. Pass 1: Strict non-overlapping moments
         for clip in clips:
             overlap = False
             for s in selected:
-                # Check if there is an overlap > 10 seconds
                 if not (clip["end_time"] <= s["start_time"] or clip["start_time"] >= s["end_time"]):
                     overlap = True
                     break
@@ -252,7 +258,43 @@ Respond ONLY with a valid JSON array of objects with keys:
                 selected.append(clip)
             if len(selected) >= target_count:
                 break
-        return selected
+
+        # 2. Pass 2: If we still need more clips, allow slight overlap (< 25% overlap)
+        if len(selected) < target_count:
+            for clip in clips:
+                if clip in selected:
+                    continue
+                excessive_overlap = False
+                for s in selected:
+                    overlap_start = max(clip["start_time"], s["start_time"])
+                    overlap_end = min(clip["end_time"], s["end_time"])
+                    if overlap_end > overlap_start:
+                        overlap_sec = overlap_end - overlap_start
+                        if overlap_sec > (clip["duration"] * 0.25):
+                            excessive_overlap = True
+                            break
+                if not excessive_overlap:
+                    selected.append(clip)
+                if len(selected) >= target_count:
+                    break
+
+        # 3. Pass 3: If target_count still not met, fill open timeline slots
+        if len(selected) < target_count and video_duration > 0:
+            timeline_clips = self._generate_timeline_fallback(video_duration, target_count, min_duration, max_duration)
+            for tc in timeline_clips:
+                overlap = False
+                for s in selected:
+                    if not (tc["end_time"] <= s["start_time"] or tc["start_time"] >= s["end_time"]):
+                        overlap = True
+                        break
+                if not overlap:
+                    selected.append(tc)
+                if len(selected) >= target_count:
+                    break
+
+        # Sort chronologically by start_time so the clips follow the video timeline
+        selected.sort(key=lambda x: x["start_time"])
+        return selected[:target_count]
 
     def _generate_timeline_fallback(
         self,

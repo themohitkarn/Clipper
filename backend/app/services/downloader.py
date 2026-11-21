@@ -40,10 +40,14 @@ class VideoDownloader:
                     if bin_exe.exists():
                         base_cmd = [str(bin_exe)]
 
+        # Add node JS runtime if available to solve YouTube JS challenges
+        if shutil.which("node"):
+            base_cmd.extend(["--js-runtimes", "node"])
+
         # Check for cookies.txt in root to bypass YouTube bot blocks automatically
         cookies_txt = Path(__file__).resolve().parent.parent.parent.parent / "cookies.txt"
         if cookies_txt.exists():
-            return base_cmd + ["--cookies", str(cookies_txt)]
+            base_cmd.extend(["--cookies", str(cookies_txt)])
 
         return base_cmd
 
@@ -154,7 +158,7 @@ class VideoDownloader:
         
         cmd = self._get_ytdlp_cmd() + [
             "--download-sections", time_range,
-            "-f", "bestvideo[height<=1080][ext=mp4]+bestaudio[ext=m4a]/best[height<=1080][ext=mp4]/best[height<=720]/best",
+            "-f", "bestvideo[height<=720][vcodec^=avc1]+bestaudio[ext=m4a]/bestvideo[height<=720]+bestaudio/best[height<=720]/best",
             "--merge-output-format", "mp4",
             "--downloader-args", "ffmpeg:-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 4",
             "--ffmpeg-location", ffmpeg_dir,
@@ -166,14 +170,35 @@ class VideoDownloader:
 
         logger.info(f"Downloading clip section {time_range} from {url}...")
         try:
-            res = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=60)
+            res = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=180)
         except subprocess.TimeoutExpired:
-            logger.warning(f"Section download timed out for {time_range}. Trying direct stream fallback.")
+            logger.warning(f"Section download timed out for {time_range}. Trying fast resolution fallback.")
         
         if output_path.exists() and output_path.stat().st_size > 1000:
             return True
+
+        # Fallback 1: Download with 480p/360p (fast payload, finishes in seconds)
+        logger.info(f"Trying fast 480p fallback for {time_range}...")
+        cmd_fallback = self._get_ytdlp_cmd() + [
+            "--download-sections", time_range,
+            "-f", "bestvideo[height<=480]+bestaudio/best[height<=480]/best[height<=360]/best",
+            "--merge-output-format", "mp4",
+            "--downloader-args", "ffmpeg:-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 4",
+            "--ffmpeg-location", ffmpeg_dir,
+            "-o", str(output_path),
+            "--force-overwrites",
+            "--no-playlist",
+            url
+        ]
+        try:
+            subprocess.run(cmd_fallback, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=120)
+        except Exception as e:
+            logger.warning(f"Fast fallback failed: {e}")
+
+        if output_path.exists() and output_path.stat().st_size > 1000:
+            return True
             
-        # If specific section download fails, try downloading with direct ffmpeg stream seek
+        # Fallback 2: Stream slicing via direct ffmpeg seek
         return self._download_with_ffmpeg_stream(url, start_seconds, end_seconds, output_path)
 
     def _download_with_ffmpeg_stream(
@@ -187,26 +212,40 @@ class VideoDownloader:
         try:
             cmd = self._get_ytdlp_cmd() + [
                 "-g",
-                "-f", "best[ext=mp4]/best",
+                "-f", "bestvideo[height<=720]+bestaudio/best[height<=720]/best",
                 url
             ]
             res = subprocess.run(cmd, capture_output=True, text=True, check=True)
-            stream_url = res.stdout.strip().split("\n")[0]
-            if not stream_url:
+            urls = [u.strip() for u in res.stdout.strip().split("\n") if u.strip().startswith("http")]
+            if not urls:
                 return False
 
             duration = end_seconds - start_seconds
             ffmpeg_exe = get_ffmpeg_path()
-            ffmpeg_cmd = [
-                ffmpeg_exe, "-y",
-                "-reconnect", "1", "-reconnect_streamed", "1", "-reconnect_delay_max", "4",
-                "-ss", str(start_seconds),
-                "-i", stream_url,
-                "-t", str(duration),
-                "-c:v", "libx264", "-c:a", "aac",
-                "-preset", "veryfast",
-                str(output_path)
-            ]
+            if len(urls) >= 2:
+                ffmpeg_cmd = [
+                    ffmpeg_exe, "-y",
+                    "-reconnect", "1", "-reconnect_streamed", "1", "-reconnect_delay_max", "4",
+                    "-ss", str(start_seconds),
+                    "-i", urls[0],
+                    "-ss", str(start_seconds),
+                    "-i", urls[1],
+                    "-t", str(duration),
+                    "-c:v", "libx264", "-c:a", "aac",
+                    "-preset", "veryfast",
+                    str(output_path)
+                ]
+            else:
+                ffmpeg_cmd = [
+                    ffmpeg_exe, "-y",
+                    "-reconnect", "1", "-reconnect_streamed", "1", "-reconnect_delay_max", "4",
+                    "-ss", str(start_seconds),
+                    "-i", urls[0],
+                    "-t", str(duration),
+                    "-c:v", "libx264", "-c:a", "aac",
+                    "-preset", "veryfast",
+                    str(output_path)
+                ]
             subprocess.run(ffmpeg_cmd, capture_output=True, text=True, timeout=180, check=True)
             return output_path.exists() and output_path.stat().st_size > 1000
         except Exception as e:
