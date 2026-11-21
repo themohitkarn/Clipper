@@ -185,6 +185,12 @@ class JobManager:
                     subtitle_style=request.subtitle_style
                 ))
 
+            if not processed_clips:
+                job.status = "failed"
+                job.error = "Could not download clips (YouTube may be blocking requests from this IP or requiring sign-in). Try uploading the video directly using the 'Upload Local Video' tab!"
+                job.current_step = job.error
+                return
+
             job.status = "completed"
             job.progress = 100
             job.current_step = f"Successfully generated {len(processed_clips)} viral clips!"
