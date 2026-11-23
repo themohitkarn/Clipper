@@ -1,10 +1,7 @@
 from __future__ import annotations
 import logging
-import subprocess
 from pathlib import Path
 from typing import Dict, Any, Optional, Tuple
-
-from ....utils.ffmpeg_helper import get_ffmpeg_path
 
 logger = logging.getLogger(__name__)
 
@@ -13,8 +10,8 @@ Tuple_Filters = tuple[str, str]
 class SmartReframe:
     """
     Intelligent Gaming Video Reframer.
-    Supports Facecam-aware Split-Screen (Facecam Top + Gameplay Bottom),
-    Dual-layer Blurred Background, 1:1 Square, and 16:9 Landscape.
+    Supports Facecam-aware 50/50 Split-Screen (Facecam Top 1080x960 + Gameplay Bottom 1080x960),
+    White Divider Line, Dual-layer Blurred Background, 1:1 Square, and 16:9 Landscape.
     """
     def __init__(self):
         pass
@@ -40,19 +37,32 @@ class SmartReframe:
         )
 
         if use_split_screen:
-            # Professional Facecam Top + Gameplay Bottom Split-Screen
+            # Professional 50/50 Facecam Top + Gameplay Bottom Split-Screen
             cam = facecam_info["camera_window"]
-            cx, cy, cw, ch = cam["x"], cam["y"], cam["w"], cam["h"]
+            cx = max(0, int(cam["x"]))
+            cy = max(0, int(cam["y"]))
+            cw = max(60, int(cam["w"]))
+            ch = max(60, int(cam["h"]))
+            corner = str(facecam_info.get("corner", ""))
 
-            # Top Camera: 1080 x 600
-            # Bottom Game: 1080 x 1320
-            # Separator line at y=600
+            # Calculate gameplay horizontal crop offset away from facecam
+            # If facecam is on left, crop center-right of gameplay so webcam isn't duplicated
+            if "left" in corner or cx < 400:
+                game_crop_x = "iw-ih*9/8"
+            elif "right" in corner:
+                game_crop_x = "0"
+            else:
+                game_crop_x = "(iw-ih*9/8)/2"
+
+            # Top Camera: 1080 x 960
+            # Bottom Game: 1080 x 960
+            # Crisp divider line at y=956 (8px height)
+            # Uses vstack for rock-solid sync and instant encoding
             filter_complex = (
-                f"[0:v]crop={cw}:{ch}:{cx}:{cy},scale=1080:600:force_original_aspect_ratio=increase,crop=1080:600[cam_top];"
-                f"[0:v]crop=ih*9/16*1.2:ih:(iw-ih*9/16*1.2)/2:0,scale=1080:1320:force_original_aspect_ratio=increase,crop=1080:1320[game_bot];"
-                f"nullsrc=size=1080x1920[canvas];"
-                f"[canvas][cam_top]overlay=0:0[tmp1];"
-                f"[tmp1][game_bot]overlay=0:600[base]"
+                f"[0:v]crop={cw}:{ch}:{cx}:{cy},scale=1080:960:force_original_aspect_ratio=increase,crop=1080:960[cam_top];"
+                f"[0:v]crop=ih*9/8:ih:{game_crop_x}:0,scale=1080:960:force_original_aspect_ratio=increase,crop=1080:960[game_bot];"
+                f"[cam_top][game_bot]vstack=inputs=2[stacked];"
+                f"[stacked]drawbox=x=0:y=956:w=1080:h=8:color=white@0.95:t=fill[base]"
             )
             final_map = "[base]"
 

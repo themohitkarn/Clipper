@@ -67,7 +67,7 @@ class VideoProcessor:
         if normalize_audio:
             cmd.extend(["-filter:a", "loudnorm=I=-16:TP=-1.5:LRA=11"])
 
-        cmd.append(str(output_clip_path))
+        cmd.extend(["-shortest", str(output_clip_path)])
 
         logger.info(f"Rendering clip to {aspect_ratio}: {output_clip_path.name}")
         try:

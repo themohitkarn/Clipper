@@ -125,11 +125,12 @@ class SubtitleGenerator:
         clip_start_offset: float = 0.0,
         style_preset: str = "hormozi",
         video_width: int = 1080,
-        video_height: int = 1920
+        video_height: int = 1920,
+        is_split_screen: bool = False
     ) -> Path:
         """
         Generate Advanced SubStation Alpha (.ass) file with professional animated styling.
-        This produces the exact Alex Hormozi / MrBeast viral subtitle aesthetic.
+        Supports 50/50 split-screen center placement across the divider line.
         """
         output_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -280,7 +281,13 @@ class SubtitleGenerator:
             }
         }
 
-        cfg = styles.get(style_preset, styles["hormozi"])
+        cfg = styles.get(style_preset, styles["hormozi"]).copy()
+        if is_split_screen:
+            # Position captions right across the horizontal divider line (between facecam and gameplay)
+            cfg["margin_v"] = 910 if video_height >= 1920 else int(video_height * 0.47)
+            cfg["size"] = 56 if video_height >= 1920 else 32
+            cfg["outline"] = 4
+            cfg["shadow"] = 2
 
         header = f"""[Script Info]
 ScriptType: v4.00+

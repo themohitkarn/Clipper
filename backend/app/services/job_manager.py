@@ -169,6 +169,43 @@ class JobManager:
                     logger.warning(f"Could not download section for clip {clip_id}")
                     continue
 
+                # Dynamically analyze facecam on this downloaded clip (works for streams & uploads alike)
+                clip_facecam = facecam_info
+                if (not clip_facecam or not clip_facecam.get("has_facecam")) and request.facecam_layout != "blurred_bg":
+                    try:
+                        sample_frames = await loop.run_in_executor(
+                            None,
+                            lambda: self.gaming_analyzer.visual_analyzer.sample_frames_from_video(
+                                raw_clip_path,
+                                start_time=1.0,
+                                duration=min(12.0, float(moment.get("duration", 20.0))),
+                                sample_fps=0.5,
+                                max_samples=6
+                            )
+                        )
+                        if sample_frames:
+                            w = sample_frames[0].shape[1]
+                            h = sample_frames[0].shape[0]
+                            detected = await loop.run_in_executor(
+                                None,
+                                lambda: self.gaming_analyzer.facecam_detector.detect_facecam(
+                                    sample_frames, video_width=w, video_height=h
+                                )
+                            )
+                            if detected.get("has_facecam"):
+                                clip_facecam = detected
+                                job.has_facecam = True
+                                logger.info(f"Clip {clip_id}: Streamer facecam detected at {detected.get('corner')} (confidence: {detected.get('confidence')})")
+                    except Exception as e:
+                        logger.warning(f"Error checking facecam on clip {clip_id}: {e}")
+
+                is_split = bool(
+                    request.aspect_ratio == "9:16" and
+                    clip_facecam and
+                    clip_facecam.get("has_facecam") and
+                    request.facecam_layout in ("auto", "split_screen")
+                )
+
                 # Filter subtitles belonging to this clip
                 clip_subs = []
                 if transcript:
@@ -186,13 +223,15 @@ class JobManager:
                 if request.subtitle_style != "none":
                     await loop.run_in_executor(
                         None,
-                        self.sub_gen.generate_ass,
-                        clip_subs,
-                        ass_path,
-                        moment["start_time"],
-                        request.subtitle_style,
-                        1080,
-                        1920 if request.aspect_ratio == "9:16" else 1080
+                        lambda: self.sub_gen.generate_ass(
+                            subtitles=clip_subs,
+                            output_path=ass_path,
+                            clip_start_offset=moment["start_time"],
+                            style_preset=request.subtitle_style,
+                            video_width=1080,
+                            video_height=1920 if request.aspect_ratio == "9:16" else 1080,
+                            is_split_screen=is_split
+                        )
                     )
 
                 # Reframe and burn subtitles (with optional facecam split-screen and audio normalization)
@@ -205,7 +244,7 @@ class JobManager:
                     ass_path if request.subtitle_style != "none" else None,
                     srt_path if request.subtitle_style != "none" else None,
                     thumb_path,
-                    facecam_info,
+                    clip_facecam,
                     request.facecam_layout,
                     request.gaming_effects_enabled
                 )

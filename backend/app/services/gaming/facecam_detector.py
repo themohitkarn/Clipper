@@ -8,8 +8,8 @@ logger = logging.getLogger(__name__)
 class FacecamDetector:
     """
     Local Computer Vision Facecam Detector.
-    Scans corner regions of gameplay recordings to detect streamer webcams,
-    preventing fake facecam crops and enabling professional split-screen reframing.
+    Scans gameplay recordings to detect streamer webcams (left, right, top, corners),
+    calculating precise camera bounding boxes for professional 50/50 split-screen reframing.
     """
     def __init__(self):
         # Load OpenCV Haar cascade frontal face model from bundled package
@@ -35,104 +35,115 @@ class FacecamDetector:
     ) -> Dict[str, Any]:
         """
         Analyze sampled frames to identify streamer facecam location.
-        Returns facecam existence, corner, bounding box, and layout recommendation.
+        Returns facecam existence, position/corner, bounding box, and layout recommendation.
         """
         if not sample_frames or not self.face_cascade or self.face_cascade.empty():
             return self._no_facecam()
 
-        # Define candidate corner quadrants (relative to 1920x1080)
-        # top_right, top_left, bottom_left, bottom_right
-        w_quad = int(video_width * 0.32)
-        h_quad = int(video_height * 0.35)
-
-        corners = {
-            "top_right": (video_width - w_quad, 0, w_quad, h_quad),
-            "top_left": (0, 0, w_quad, h_quad),
-            "bottom_left": (0, video_height - h_quad, w_quad, h_quad),
-            "bottom_right": (video_width - w_quad, video_height - h_quad, w_quad, h_quad)
-        }
-
-        corner_detections: Dict[str, List[Dict[str, int]]] = {
-            c: [] for c in corners
-        }
-
         total_frames = len(sample_frames)
+        all_detections: List[Dict[str, Any]] = []
 
         for frame in sample_frames:
             if frame is None or frame.size == 0:
                 continue
 
-            # Ensure frame matches standard analysis scale
             h_curr, w_curr = frame.shape[:2]
             scale_x = video_width / max(1, w_curr)
             scale_y = video_height / max(1, h_curr)
 
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            # Detect faces across the frame
+            faces = self.face_cascade.detectMultiScale(
+                gray,
+                scaleFactor=1.1,
+                minNeighbors=5,
+                minSize=(25, 25)
+            )
 
-            for corner_name, (qx, qy, qw, qh) in corners.items():
-                # Map corner to frame dimensions
-                fx = int(qx / scale_x)
-                fy = int(qy / scale_y)
-                fw = int(qw / scale_x)
-                fh = int(qh / scale_y)
+            for (bx, by, bw, bh) in faces:
+                orig_x = int(bx * scale_x)
+                orig_y = int(by * scale_y)
+                orig_w = int(bw * scale_x)
+                orig_h = int(bh * scale_y)
 
-                # Clamp to frame bounds
-                fx = max(0, min(w_curr - 10, fx))
-                fy = max(0, min(h_curr - 10, fy))
-                fw = min(fw, w_curr - fx)
-                fh = min(fh, h_curr - fy)
+                # Determine spatial position
+                pos = self._classify_position(orig_x, orig_y, orig_w, orig_h, video_width, video_height)
+                all_detections.append({
+                    "x": orig_x,
+                    "y": orig_y,
+                    "w": orig_w,
+                    "h": orig_h,
+                    "position": pos,
+                    "cx": orig_x + orig_w // 2,
+                    "cy": orig_y + orig_h // 2
+                })
 
-                roi = gray[fy : fy + fh, fx : fx + fw]
-                if roi.shape[0] < 30 or roi.shape[1] < 30:
-                    continue
+        if not all_detections:
+            return self._no_facecam()
 
-                faces = self.face_cascade.detectMultiScale(
-                    roi,
-                    scaleFactor=1.15,
-                    minNeighbors=4,
-                    minSize=(30, 30)
-                )
+        # Cluster detections by spatial proximity (streamers sit in the same place)
+        clusters: List[List[Dict[str, Any]]] = []
+        cluster_threshold = video_width * 0.12  # max distance to be part of the same facecam cluster
 
-                if len(faces) > 0:
-                    bx, by, bw, bh = faces[0]
-                    corner_detections[corner_name].append({
-                        "x": int((fx + bx) * scale_x),
-                        "y": int((fy + by) * scale_y),
-                        "w": int(bw * scale_x),
-                        "h": int(bh * scale_y)
-                    })
+        for det in all_detections:
+            matched = False
+            for cluster in clusters:
+                avg_cx = np.mean([d["cx"] for d in cluster])
+                avg_cy = np.mean([d["cy"] for d in cluster])
+                dist = np.hypot(det["cx"] - avg_cx, det["cy"] - avg_cy)
+                if dist < cluster_threshold:
+                    cluster.append(det)
+                    matched = True
+                    break
+            if not matched:
+                clusters.append([det])
 
-        # Evaluate detection frequencies
-        best_corner = None
-        max_hits = 0
-        for corner_name, hits in corner_detections.items():
-            if len(hits) > max_hits:
-                max_hits = len(hits)
-                best_corner = corner_name
+        # Find best cluster: prefer high hit count & non-center positions (streamers use corners/sides)
+        best_cluster = None
+        max_score = -1.0
 
-        # If detected in at least 30% of test frames, consider facecam present
-        min_required = max(1, int(total_frames * 0.3))
-        if max_hits >= min_required and best_corner is not None:
-            detections = corner_detections[best_corner]
-            # Average bounding box
-            avg_x = int(np.mean([d["x"] for d in detections]))
-            avg_y = int(np.mean([d["y"] for d in detections]))
-            avg_w = int(np.mean([d["w"] for d in detections]))
-            avg_h = int(np.mean([d["h"] for d in detections]))
+        for cluster in clusters:
+            hits = len(cluster)
+            sample_det = cluster[0]
+            pos = sample_det["position"]
+            # Position weighting: streamers almost always sit on sides/corners
+            pos_weight = 1.4 if pos in ("top_left", "mid_left", "bottom_left", "top_right", "mid_right", "bottom_right") else 1.0
+            score = hits * pos_weight
 
-            # Pad face box to full camera window
-            pad_x = int(avg_w * 0.5)
-            pad_y = int(avg_h * 0.6)
-            cam_x = max(0, avg_x - pad_x)
-            cam_y = max(0, avg_y - pad_y)
-            cam_w = min(video_width - cam_x, avg_w + (pad_x * 2))
-            cam_h = min(video_height - cam_y, avg_h + (pad_y * 2))
+            if score > max_score:
+                max_score = score
+                best_cluster = cluster
 
-            confidence = round(min(0.95, max_hits / max(1, total_frames)), 2)
+        min_hits = max(1, int(total_frames * 0.25))
+        if best_cluster and len(best_cluster) >= min_hits:
+            avg_x = int(np.mean([d["x"] for d in best_cluster]))
+            avg_y = int(np.mean([d["y"] for d in best_cluster]))
+            avg_w = int(np.mean([d["w"] for d in best_cluster]))
+            avg_h = int(np.mean([d["h"] for d in best_cluster]))
+            position = best_cluster[0]["position"]
+
+            # Compute natural streamer webcam crop window around the face
+            # Cam width covers face + headphones + background room
+            cam_w = int(max(avg_w * 4.6, video_width * 0.20))
+            # 16:10 aspect ratio suitable for facecam without capturing HUD/sub counters below
+            cam_h = int(cam_w * 0.62)
+
+            cam_cx = avg_x + (avg_w // 2)
+            cam_x = max(0, min(video_width - cam_w, cam_cx - (cam_w // 2)))
+            top_head_space = int(avg_h * 0.55)
+            cam_y = max(0, min(video_height - cam_h, avg_y - top_head_space))
+
+            # Round to even dimensions for FFmpeg libx264 compatibility
+            cam_x = (cam_x // 2) * 2
+            cam_y = (cam_y // 2) * 2
+            cam_w = (cam_w // 2) * 2
+            cam_h = (cam_h // 2) * 2
+
+            confidence = round(min(0.99, len(best_cluster) / max(1, total_frames)), 2)
 
             return {
                 "has_facecam": True,
-                "corner": best_corner,
+                "corner": position,
                 "confidence": confidence,
                 "face_bbox": {"x": avg_x, "y": avg_y, "w": avg_w, "h": avg_h},
                 "camera_window": {"x": cam_x, "y": cam_y, "w": cam_w, "h": cam_h},
@@ -140,6 +151,30 @@ class FacecamDetector:
             }
 
         return self._no_facecam()
+
+    def _classify_position(self, x: int, y: int, w: int, h: int, vw: int, vh: int) -> str:
+        cx = x + w // 2
+        cy = y + h // 2
+
+        if cx < vw * 0.40:
+            if cy < vh * 0.35:
+                return "top_left"
+            elif cy > vh * 0.65:
+                return "bottom_left"
+            else:
+                return "mid_left"
+        elif cx > vw * 0.60:
+            if cy < vh * 0.35:
+                return "top_right"
+            elif cy > vh * 0.65:
+                return "bottom_right"
+            else:
+                return "mid_right"
+        else:
+            if cy < vh * 0.40:
+                return "top_center"
+            else:
+                return "center"
 
     def _no_facecam(self) -> Dict[str, Any]:
         return {
