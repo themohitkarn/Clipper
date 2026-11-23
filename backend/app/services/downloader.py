@@ -44,6 +44,9 @@ class VideoDownloader:
         if shutil.which("node"):
             base_cmd.extend(["--js-runtimes", "node"])
 
+        # Always skip HLS on YouTube to prevent manifest.googlevideo.com network timeouts (20x faster!)
+        base_cmd.extend(["--extractor-args", "youtube:skip=hls"])
+
         # Check for cookies.txt in root to bypass YouTube bot blocks automatically
         cookies_txt = Path(__file__).resolve().parent.parent.parent.parent / "cookies.txt"
         if cookies_txt.exists():
@@ -158,7 +161,7 @@ class VideoDownloader:
         
         cmd = self._get_ytdlp_cmd() + [
             "--download-sections", time_range,
-            "-f", "bestvideo[height<=720][vcodec^=avc1]+bestaudio[ext=m4a]/bestvideo[height<=720]+bestaudio/best[height<=720]/best",
+            "-f", "bestvideo[height<=720][vcodec^=avc1]+bestaudio[ext=m4a]/bestvideo[height<=480]+bestaudio/bestvideo[height<=720]+bestaudio/best[height<=720]/best",
             "--merge-output-format", "mp4",
             "--downloader-args", "ffmpeg:-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 4",
             "--ffmpeg-location", ffmpeg_dir,
@@ -170,14 +173,14 @@ class VideoDownloader:
 
         logger.info(f"Downloading clip section {time_range} from {url}...")
         try:
-            res = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=180)
+            res = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=120)
         except subprocess.TimeoutExpired:
             logger.warning(f"Section download timed out for {time_range}. Trying fast resolution fallback.")
         
-        if output_path.exists() and output_path.stat().st_size > 1000:
+        if self._check_and_remux(output_path):
             return True
 
-        # Fallback 1: Download with 480p/360p (fast payload, finishes in seconds)
+        # Fallback 1: Fast 480p/360p payload
         logger.info(f"Trying fast 480p fallback for {time_range}...")
         cmd_fallback = self._get_ytdlp_cmd() + [
             "--download-sections", time_range,
@@ -191,15 +194,37 @@ class VideoDownloader:
             url
         ]
         try:
-            subprocess.run(cmd_fallback, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=120)
+            subprocess.run(cmd_fallback, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=90)
         except Exception as e:
             logger.warning(f"Fast fallback failed: {e}")
 
-        if output_path.exists() and output_path.stat().st_size > 1000:
+        if self._check_and_remux(output_path):
             return True
             
         # Fallback 2: Stream slicing via direct ffmpeg seek
         return self._download_with_ffmpeg_stream(url, start_seconds, end_seconds, output_path)
+
+    def _check_and_remux(self, output_path: Path) -> bool:
+        """Verify output exists or remux from alternate container formats (.webm, .mkv, .part)."""
+        if output_path.exists() and output_path.stat().st_size > 1000:
+            return True
+        parent = output_path.parent
+        stem = output_path.stem
+        candidates = list(parent.glob(f"{stem}.*")) + list(parent.glob(f"{output_path.name}.*"))
+        for cand in candidates:
+            if cand != output_path and cand.exists() and cand.stat().st_size > 1000:
+                try:
+                    ffmpeg_exe = get_ffmpeg_path()
+                    subprocess.run(
+                        [ffmpeg_exe, "-y", "-i", str(cand), "-c", "copy", str(output_path)],
+                        capture_output=True, timeout=30, check=True
+                    )
+                    cand.unlink(missing_ok=True)
+                    if output_path.exists() and output_path.stat().st_size > 1000:
+                        return True
+                except Exception:
+                    pass
+        return False
 
     def _download_with_ffmpeg_stream(
         self,
