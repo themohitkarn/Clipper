@@ -110,6 +110,12 @@ export default function App() {
     if (payload.gemini_api_key) {
       formData.append('gemini_api_key', payload.gemini_api_key);
     }
+    if (payload.groq_api_key) {
+      formData.append('groq_api_key', payload.groq_api_key);
+    }
+    if (payload.llm_provider) {
+      formData.append('llm_provider', payload.llm_provider);
+    }
 
     try {
       const res = await fetch('/api/upload', {

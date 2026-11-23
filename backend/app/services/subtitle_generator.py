@@ -133,9 +133,99 @@ class SubtitleGenerator:
         """
         output_path.parent.mkdir(parents=True, exist_ok=True)
 
-        # Style presets (Colors in BGR format: &H<Alpha><Blue><Green><Red>&)
-        # Hormozi: Bright Yellow text, thick dark border
+        # Merge gaming presets with legacy styles
         styles = {
+            "gaming_neon": {
+                "font": "Arial Black",
+                "size": 56 if video_height >= 1920 else 32,
+                "primary": "&H0033FF33&",      # Neon Cyber Green
+                "secondary": "&H00FFFF00&",    # Cyan
+                "outline_color": "&H00000000&",
+                "back_color": "&H80000000&",
+                "bold": 1,
+                "outline": 4,
+                "shadow": 2,
+                "alignment": 2,
+                "margin_v": 240 if video_height >= 1920 else 80
+            },
+            "rgb_cyber": {
+                "font": "Arial Black",
+                "size": 56 if video_height >= 1920 else 32,
+                "primary": "&H00FF33CC&",      # Electric Magenta
+                "secondary": "&H00FFFF33&",    # Cyan
+                "outline_color": "&H00110022&",
+                "back_color": "&H80000000&",
+                "bold": 1,
+                "outline": 4,
+                "shadow": 3,
+                "alignment": 2,
+                "margin_v": 240 if video_height >= 1920 else 80
+            },
+            "clean_esports": {
+                "font": "Arial Black",
+                "size": 54 if video_height >= 1920 else 30,
+                "primary": "&H0000D7FF&",      # Esports Gold
+                "secondary": "&H00FFFFFF&",
+                "outline_color": "&H00000000&",
+                "back_color": "&H80000000&",
+                "bold": 1,
+                "outline": 3,
+                "shadow": 1,
+                "alignment": 2,
+                "margin_v": 240 if video_height >= 1920 else 80
+            },
+            "bold_yellow": {
+                "font": "Arial Black",
+                "size": 58 if video_height >= 1920 else 32,
+                "primary": "&H0000FFFF&",      # Bright Yellow
+                "secondary": "&H00FFFFFF&",
+                "outline_color": "&H00000000&",
+                "back_color": "&H80000000&",
+                "bold": 1,
+                "outline": 4,
+                "shadow": 2,
+                "alignment": 2,
+                "margin_v": 240 if video_height >= 1920 else 80
+            },
+            "minimal_white": {
+                "font": "Arial",
+                "size": 52 if video_height >= 1920 else 28,
+                "primary": "&H00FFFFFF&",      # Pure White
+                "secondary": "&H00CCCCCC&",
+                "outline_color": "&H00111111&",
+                "back_color": "&H60000000&",
+                "bold": 1,
+                "outline": 3,
+                "shadow": 1,
+                "alignment": 2,
+                "margin_v": 220 if video_height >= 1920 else 70
+            },
+            "punchy_red": {
+                "font": "Impact",
+                "size": 60 if video_height >= 1920 else 34,
+                "primary": "&H002222FF&",      # Crimson Impact Red
+                "secondary": "&H0000FFFF&",
+                "outline_color": "&H00000000&",
+                "back_color": "&H80000000&",
+                "bold": 1,
+                "outline": 4,
+                "shadow": 2,
+                "alignment": 2,
+                "margin_v": 240 if video_height >= 1920 else 80
+            },
+            "hindi_gaming_pro": {
+                "font": "Arial Black",
+                "size": 56 if video_height >= 1920 else 32,
+                "primary": "&H0014F0FF&",      # Electric Amber
+                "secondary": "&H00FFFFFF&",
+                "outline_color": "&H00000000&",
+                "back_color": "&H90000000&",
+                "bold": 1,
+                "outline": 4,
+                "shadow": 2,
+                "alignment": 2,
+                "margin_v": 240 if video_height >= 1920 else 80
+            },
             "hormozi": {
                 "font": "Arial Black",
                 "size": 58 if video_height >= 1920 else 32,

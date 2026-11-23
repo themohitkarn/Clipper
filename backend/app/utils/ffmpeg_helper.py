@@ -8,42 +8,45 @@ from typing import Optional, Tuple, Dict, Any
 _FFMPEG_PATH: Optional[str] = None
 _FFPROBE_PATH: Optional[str] = None
 
+def _verify_executable(path: Optional[str]) -> bool:
+    """Verify that a binary can actually be invoked without being blocked by OS policies."""
+    if not path or not os.path.exists(path):
+        return False
+    try:
+        res = subprocess.run([path, "-version"], capture_output=True, text=True, timeout=3)
+        return res.returncode == 0
+    except Exception:
+        return False
+
 def find_system_ffmpeg() -> Tuple[Optional[str], Optional[str]]:
-    """Search for ffmpeg and ffprobe on system path or standard directories."""
-    # 1. Check PATH
-    ffmpeg = shutil.which("ffmpeg")
-    ffprobe = shutil.which("ffprobe")
-    if ffmpeg:
-        return ffmpeg, ffprobe or ffmpeg.replace("ffmpeg", "ffprobe")
+    """Search for working ffmpeg and ffprobe on system path or standard directories."""
+    candidates = []
 
-    # 2. Check local bin directory in project
-    local_bin = Path(__file__).resolve().parent.parent.parent / "bin"
-    if (local_bin / "ffmpeg.exe").exists():
-        ffmpeg = str(local_bin / "ffmpeg.exe")
-        ffprobe = str(local_bin / "ffprobe.exe") if (local_bin / "ffprobe.exe").exists() else None
-        return ffmpeg, ffprobe
+    # 1. Check local bin directory in project root
+    project_bin = Path(__file__).resolve().parent.parent.parent.parent / "bin"
+    if (project_bin / "ffmpeg.exe").exists():
+        candidates.append((str(project_bin / "ffmpeg.exe"), str(project_bin / "ffprobe.exe")))
 
-    # 3. Check AppData WinGet Gyan.FFmpeg or common package locations
-    appdata = os.environ.get("LOCALAPPDATA", "")
-    if appdata:
-        winget_path = Path(appdata) / "Microsoft" / "WinGet" / "Packages"
-        if winget_path.exists():
-            for p in winget_path.glob("**/ffmpeg.exe"):
-                ffmpeg = str(p)
-                probe_cand = p.parent / "ffprobe.exe"
-                ffprobe = str(probe_cand) if probe_cand.exists() else None
-                return ffmpeg, ffprobe
+    backend_bin = Path(__file__).resolve().parent.parent.parent / "bin"
+    if (backend_bin / "ffmpeg.exe").exists():
+        candidates.append((str(backend_bin / "ffmpeg.exe"), str(backend_bin / "ffprobe.exe")))
 
-    # 4. Check imageio_ffmpeg if installed
+    # 2. Check imageio_ffmpeg
     try:
         import imageio_ffmpeg
-        ffmpeg = imageio_ffmpeg.get_ffmpeg_exe()
-        if ffmpeg and os.path.exists(ffmpeg):
-            return ffmpeg, None
+        img_exe = imageio_ffmpeg.get_ffmpeg_exe()
+        if img_exe and os.path.exists(img_exe):
+            candidates.append((img_exe, None))
     except Exception:
         pass
 
-    # 5. Check common program files
+    # 3. Check PATH
+    path_ffmpeg = shutil.which("ffmpeg")
+    path_ffprobe = shutil.which("ffprobe")
+    if path_ffmpeg:
+        candidates.append((path_ffmpeg, path_ffprobe))
+
+    # 4. Check common program files
     common_paths = [
         r"C:\Program Files\ffmpeg\bin\ffmpeg.exe",
         r"C:\ffmpeg\bin\ffmpeg.exe",
@@ -52,7 +55,13 @@ def find_system_ffmpeg() -> Tuple[Optional[str], Optional[str]]:
     for cp in common_paths:
         if os.path.exists(cp):
             probe_p = cp.replace("ffmpeg.exe", "ffprobe.exe")
-            return cp, probe_p if os.path.exists(probe_p) else None
+            candidates.append((cp, probe_p if os.path.exists(probe_p) else None))
+
+    # Test each candidate for execution permission
+    for ffmpeg_cand, probe_cand in candidates:
+        if _verify_executable(ffmpeg_cand):
+            valid_probe = probe_cand if _verify_executable(probe_cand) else None
+            return ffmpeg_cand, valid_probe
 
     return None, None
 

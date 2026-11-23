@@ -17,8 +17,13 @@ for directory in [DATA_DIR, TEMP_DIR, OUTPUTS_DIR, THUMBNAILS_DIR]:
 HOST = os.getenv("HOST", "0.0.0.0")
 PORT = int(os.getenv("PORT", "8000"))
 
-# Gemini API
+# Free LLM APIs
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
+GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
+OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+
+# YouTube API
+YOUTUBE_CLIENT_SECRETS_FILE = os.getenv("YOUTUBE_CLIENT_SECRETS_FILE", str(DATA_DIR / "client_secret.json"))
 
 # Processing Defaults
 DEFAULT_MAX_CLIPS = 5

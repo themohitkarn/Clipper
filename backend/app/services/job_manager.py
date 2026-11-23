@@ -8,11 +8,14 @@ from typing import Dict, Optional, List
 
 from ..config import TEMP_DIR, OUTPUTS_DIR, THUMBNAILS_DIR
 from ..models.schemas import JobStatusResponse, ClipItem, ProcessUrlRequest
+from ..utils.hinglish import to_hinglish
 from .downloader import VideoDownloader
 from .transcriber import Transcriber
 from .viral_detector import ViralDetector
 from .subtitle_generator import SubtitleGenerator
 from .video_processor import VideoProcessor
+from .gaming.universal_analyzer import UniversalGamingAnalyzer
+from .youtube_uploader import YouTubePublisher
 
 logger = logging.getLogger(__name__)
 
@@ -27,6 +30,8 @@ class JobManager:
             cls._instance.transcriber = Transcriber()
             cls._instance.sub_gen = SubtitleGenerator()
             cls._instance.video_proc = VideoProcessor()
+            cls._instance.gaming_analyzer = UniversalGamingAnalyzer()
+            cls._instance.yt_publisher = YouTubePublisher()
         return cls._instance
 
     def create_job(self, request: ProcessUrlRequest) -> str:
@@ -76,26 +81,60 @@ class JobManager:
 
             video_id = self.downloader.extract_youtube_id(request.url)
             transcript = None
+            local_path = Path(request.url) if not video_id and Path(request.url).exists() else None
+
             if video_id:
                 transcript = await loop.run_in_executor(
                     None, self.transcriber.get_youtube_transcript, video_id
                 )
+            elif local_path and local_path.is_file():
+                # For uploaded local video, transcribe via local model if available
+                transcript = await loop.run_in_executor(
+                    None, self.transcriber.transcribe_local_audio, local_path
+                )
 
-            # 3. Detect viral clips
+            # 3. Detect highlights (Gaming Engine vs General Speech)
             job.status = "finding_hooks"
             job.progress = 50
-            job.current_step = "AI scoring virality & identifying scroll-stopping hooks..."
+            facecam_info = None
 
-            detector = ViralDetector(api_key=request.gemini_api_key)
-            best_moments = await loop.run_in_executor(
-                None,
-                detector.detect_best_clips,
-                transcript or [],
-                job.source_duration or 300.0,
-                request.max_clips,
-                float(request.min_duration),
-                float(request.max_duration)
-            )
+            if request.mode == "gaming" or (request.game and request.game != "none"):
+                job.current_step = "Universal Gaming AI analyzing gameplay patterns, combat, audio spikes & facecam..."
+                gaming_res = await loop.run_in_executor(
+                    None,
+                    lambda: self.gaming_analyzer.analyze_gaming_video(
+                        metadata=info,
+                        transcript_segments=transcript or [],
+                        video_duration=float(job.source_duration or 300.0),
+                        target_count=request.max_clips,
+                        min_duration=float(request.min_duration),
+                        max_duration=float(request.max_duration),
+                        game_override=request.game,
+                        local_video_path=local_path,
+                        filter_categories=request.highlight_categories
+                    )
+                )
+                best_moments = gaming_res["clips"]
+                job.detected_game = gaming_res["game_detection"]["display_name"]
+                job.game_confidence = gaming_res["game_detection"]["confidence"]
+                job.has_facecam = gaming_res["facecam_info"].get("has_facecam", False)
+                facecam_info = gaming_res["facecam_info"]
+            else:
+                job.current_step = "AI scoring virality & identifying scroll-stopping hooks..."
+                detector = ViralDetector(
+                    api_key=request.gemini_api_key,
+                    groq_api_key=request.groq_api_key,
+                    llm_provider=request.llm_provider
+                )
+                best_moments = await loop.run_in_executor(
+                    None,
+                    detector.detect_best_clips,
+                    transcript or [],
+                    job.source_duration or 300.0,
+                    request.max_clips,
+                    float(request.min_duration),
+                    float(request.max_duration)
+                )
 
             # 4. Download and process each clip
             job.status = "cutting_clips"
@@ -105,7 +144,7 @@ class JobManager:
             for idx, moment in enumerate(best_moments):
                 step_pct = 50 + int((idx / max(1, total_clips)) * 45)
                 job.progress = step_pct
-                job.current_step = f"Processing clip {idx+1}/{total_clips}: {moment['title']}..."
+                job.current_step = f"Processing clip {idx+1}/{total_clips}: {to_hinglish(moment['title'])}..."
 
                 clip_id = f"{job_id}_{idx+1}"
                 raw_clip_path = TEMP_DIR / f"{clip_id}_raw.mp4"
@@ -137,7 +176,7 @@ class JobManager:
                         if s["end"] >= moment["start_time"] and s["start"] <= moment["end_time"]:
                             clip_subs.append(s)
 
-                # Generate subtitles
+                # Generate subtitles (SRT, VTT, and ASS with Roman Hinglish if Hindi)
                 await loop.run_in_executor(
                     None, self.sub_gen.generate_srt, clip_subs, srt_path, moment["start_time"]
                 )
@@ -156,7 +195,7 @@ class JobManager:
                         1920 if request.aspect_ratio == "9:16" else 1080
                     )
 
-                # Reframe and burn subtitles
+                # Reframe and burn subtitles (with optional facecam split-screen and audio normalization)
                 await loop.run_in_executor(
                     None,
                     self.video_proc.process_clip,
@@ -165,7 +204,10 @@ class JobManager:
                     request.aspect_ratio,
                     ass_path if request.subtitle_style != "none" else None,
                     srt_path if request.subtitle_style != "none" else None,
-                    thumb_path
+                    thumb_path,
+                    facecam_info,
+                    request.facecam_layout,
+                    request.gaming_effects_enabled
                 )
 
                 if not final_clip_path.exists() or final_clip_path.stat().st_size < 1000:
@@ -179,10 +221,18 @@ class JobManager:
                     except Exception:
                         pass
 
+                shorts_meta = self.yt_publisher.prepare_shorts_metadata(
+                    clip_id=clip_id,
+                    title=to_hinglish(moment["title"]),
+                    description=moment.get("description"),
+                    hashtags=moment.get("hashtags"),
+                    game_name=moment.get("game_name") or job.detected_game
+                )
+
                 processed_clips.append(ClipItem(
                     id=clip_id,
-                    title=moment["title"],
-                    hook_text=moment["hook_text"],
+                    title=shorts_meta["title"],
+                    hook_text=to_hinglish(moment["hook_text"]),
                     viral_score=moment["viral_score"],
                     viral_reason=moment["viral_reason"],
                     start_time=moment["start_time"],
@@ -193,7 +243,15 @@ class JobManager:
                     srt_url=f"/outputs/{clip_id}.srt",
                     vtt_url=f"/outputs/{clip_id}.vtt",
                     aspect_ratio=request.aspect_ratio,
-                    subtitle_style=request.subtitle_style
+                    subtitle_style=request.subtitle_style,
+                    game_name=moment.get("game_name") or job.detected_game,
+                    event_category=moment.get("event_category"),
+                    event_category_label=moment.get("event_category_label"),
+                    gaming_score_breakdown=moment.get("gaming_score_breakdown"),
+                    has_facecam=job.has_facecam,
+                    description=shorts_meta["description"],
+                    hashtags=shorts_meta["hashtags"],
+                    youtube_upload_url=shorts_meta["studio_upload_url"]
                 ))
 
             if not processed_clips:

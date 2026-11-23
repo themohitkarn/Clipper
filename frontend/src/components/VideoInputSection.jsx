@@ -14,6 +14,8 @@ export default function VideoInputSection({ onSubmitUrl, onUploadFile, isProcess
   const [maxDuration, setMaxDuration] = useState(60);
   const [maxClips, setMaxClips] = useState(10);
   const [geminiApiKey, setGeminiApiKey] = useState('');
+  const [groqApiKey, setGroqApiKey] = useState('');
+  const [llmProvider, setLlmProvider] = useState('auto');
 
   const sampleVideos = [
     { label: "Alex Hormozi Podcast (1 hr)", url: "https://www.youtube.com/watch?v=7h2YqIu_XjQ" },
@@ -32,7 +34,9 @@ export default function VideoInputSection({ onSubmitUrl, onUploadFile, isProcess
         min_duration: parseInt(minDuration),
         max_duration: parseInt(maxDuration),
         max_clips: parseInt(maxClips),
-        gemini_api_key: geminiApiKey.trim() || null
+        gemini_api_key: geminiApiKey.trim() || null,
+        groq_api_key: groqApiKey.trim() || null,
+        llm_provider: llmProvider
       });
     } else {
       if (!file) return;
@@ -43,7 +47,9 @@ export default function VideoInputSection({ onSubmitUrl, onUploadFile, isProcess
         min_duration: parseInt(minDuration),
         max_duration: parseInt(maxDuration),
         max_clips: parseInt(maxClips),
-        gemini_api_key: geminiApiKey.trim() || null
+        gemini_api_key: geminiApiKey.trim() || null,
+        groq_api_key: groqApiKey.trim() || null,
+        llm_provider: llmProvider
       });
     }
   };
@@ -264,19 +270,79 @@ export default function VideoInputSection({ onSubmitUrl, onUploadFile, isProcess
                 </select>
               </div>
 
-              {/* Gemini API Key */}
-              <div className="sm:col-span-2 md:col-span-4 mt-2 pt-3 border-t border-slate-800 flex flex-col sm:flex-row items-center gap-3">
-                <div className="flex items-center gap-2 text-slate-400 whitespace-nowrap">
-                  <Key className="w-3.5 h-3.5 text-amber-400" />
-                  <span>Gemini API Key (Optional):</span>
+              {/* LLM Engine Selection */}
+              <div className="sm:col-span-2 md:col-span-4 mt-2 pt-3 border-t border-slate-800">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+                  <label className="flex items-center gap-1.5 font-bold text-slate-300">
+                    <Sparkles className="w-3.5 h-3.5 text-blue-400" />
+                    <span>AI Viral Detection Engine</span>
+                  </label>
+                  <select
+                    value={llmProvider}
+                    onChange={(e) => setLlmProvider(e.target.value)}
+                    className="bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-blue-500"
+                  >
+                    <option value="auto">⚡ Auto Detect (Groq Llama 3.3 / Gemini / Free Heuristic)</option>
+                    <option value="groq">⚡ Groq Cloud (Llama 3.3 70B - 100% Free & Fastest)</option>
+                    <option value="gemini">✨ Google Gemini 2.0 / 1.5 Flash (Free Tier)</option>
+                    <option value="heuristic">🛡️ 100% Free Smart Heuristic (No Key Needed)</option>
+                  </select>
                 </div>
-                <input
-                  type="password"
-                  placeholder="Leave empty for 100% Free Heuristic Mode, or paste free Google AI Studio key"
-                  value={geminiApiKey}
-                  onChange={(e) => setGeminiApiKey(e.target.value)}
-                  className="flex-1 w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-purple-500"
-                />
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {/* Groq API Key */}
+                  <div className="bg-slate-900/60 p-3 rounded-xl border border-slate-800">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-300">
+                        <Key className="w-3 h-3 text-emerald-400" />
+                        <span>Groq API Key (Free):</span>
+                      </div>
+                      <a
+                        href="https://console.groq.com/keys"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-[10px] text-blue-400 hover:underline font-bold"
+                      >
+                        Get Free Key ↗
+                      </a>
+                    </div>
+                    <input
+                      type="password"
+                      placeholder="gsk_... (Fastest Llama 3.3 analysis)"
+                      value={groqApiKey}
+                      onChange={(e) => setGroqApiKey(e.target.value)}
+                      className="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-blue-500"
+                    />
+                  </div>
+
+                  {/* Gemini API Key */}
+                  <div className="bg-slate-900/60 p-3 rounded-xl border border-slate-800">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-300">
+                        <Key className="w-3 h-3 text-amber-400" />
+                        <span>Gemini API Key (Free):</span>
+                      </div>
+                      <a
+                        href="https://aistudio.google.com/"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-[10px] text-blue-400 hover:underline font-bold"
+                      >
+                        Get Free Key ↗
+                      </a>
+                    </div>
+                    <input
+                      type="password"
+                      placeholder="AIzaSy... (Google AI Studio Free Tier)"
+                      value={geminiApiKey}
+                      onChange={(e) => setGeminiApiKey(e.target.value)}
+                      className="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-blue-500"
+                    />
+                  </div>
+                </div>
+                <p className="text-[10px] text-slate-500 mt-2">
+                  💡 <em>Don't have an API key? Leave both blank! Our built-in Smart Heuristic engine works 100% offline and free.</em>
+                </p>
               </div>
 
             </div>
